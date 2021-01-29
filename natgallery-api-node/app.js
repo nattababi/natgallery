@@ -124,8 +124,6 @@ async function libraryApiSearch(authToken, parameters) {
   let nextPageToken = null;
   let error = null;
 
-  parameters.pageSize = config.searchPageSize;
-
   try {
     // Loop while the number of photos threshold has not been met yet
     // and while there is a nextPageToken to load more items.
@@ -133,29 +131,37 @@ async function libraryApiSearch(authToken, parameters) {
       console.log(
         `Submitting search with parameters: ${JSON.stringify(parameters)}`);
 
-      // Make a POST request to search the library or album
-      const result =
-        await request.post(config.apiEndpoint + '/v1/mediaItems:search', {
-          headers: { 'Content-Type': 'application/json' },
-          json: parameters,
-          auth: { 'bearer': authToken },
-        });
+      console.log('#########################before');
+      let result = await axios.post(config.apiEndpoint + '/v1/mediaItems:search',
+        parameters,
+        {
+          headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      console.log('############################after');
+
+      result = result.data;
 
       console.log(`Response: ${result}`);
 
+      let items = [];
+      if (result && result.mediaItems) {
       // The list of media items returned may be sparse and contain missing
       // elements. Remove all invalid elements.
       // Also remove all elements that are not images by checking its mime type.
       // Media type filters can't be applied if an album is loaded, so an extra
       // filter step is required here to ensure that only images are returned.
-      const items = result && result.mediaItems ?
-        result.mediaItems
-          .filter(x => x) : // Filter empty or invalid items.
-        // Only keep media items with an image mime type.
-        //.filter(x => x.mimeType && x.mimeType.startsWith('image/')) :
-        [];
+        items = result.mediaItems.filter(x => x);//result && result.mediaItems ?
+     //   result.mediaItems.filter(x => x) : []// Filter empty or invalid items.
+      //  // Only keep media items with an image mime type.
+      //  //.filter(x => x.mimeType && x.mimeType.startsWith('image/')) :
+      //  [];
 
-      photos = photos.concat(items);
+      photos = [...photos, ...items];
+
+      }
 
       // Set the pageToken for the next request.
       parameters.pageToken = result.nextPageToken;
@@ -172,8 +178,7 @@ async function libraryApiSearch(authToken, parameters) {
     // If the error is a StatusCodeError, it contains an error.error object that
     // should be returned. It has a name, statuscode and message in the correct
     // format. Otherwise extract the properties.
-    error = err.error.error ||
-      { name: err.name, code: err.statusCode, message: err.message };
+    error = { name: err.name, code: err.response.status, message: err.message };
     console.log(error);
   }
 
@@ -185,7 +190,16 @@ async function libraryApiGetAlbums(authToken) {
   let sharedAlbums = [];
   let nextPageToken = null;
   let error = null;
-  let parameters = { pageSize: config.albumPageSize };
+  
+  let config1 = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    params: {
+      pageSize: config.albumPageSize,
+    }
+  }
 
   try {
     // Loop while there is a nextpageToken property in the response until all
@@ -194,33 +208,33 @@ async function libraryApiGetAlbums(authToken) {
       console.log(`Loading albums. Received so far: ${sharedAlbums.length}`);
       // Make a GET request to load the albums with optional parameters (the
       // pageToken if set).
-      //https://photoslibrary.googleapis.com/v1/sharedAlbums
-      const result = await request.get(config.apiEndpoint + '/v1/sharedAlbums', {
-        headers: { 'Content-Type': 'application/json' },
-        qs: parameters,
-        json: true,
-        auth: { 'bearer': authToken },
-      });
+      // https://photoslibrary.googleapis.com/v1/sharedAlbums
 
+      let result = await axios.get(config.apiEndpoint + '/v1/sharedAlbums', config1);
+      result = result.data;
+      
       if (result && result.sharedAlbums) {
         console.log(`Number of albums received: ${result.sharedAlbums.length}`);
         // Parse albums and add them to the list, skipping empty entries.
-        const items = result.sharedAlbums.filter(x => !!x);
-
-        sharedAlbums = sharedAlbums.concat(items);
+        const items = result.sharedAlbums;//.filter(x => !!x);
+        sharedAlbums = [...sharedAlbums, ...items];
       }
-      parameters.pageToken = result.nextPageToken;
+
+      config1.params.pageToken = result.nextPageToken;
+
       // Loop until all albums have been listed and no new nextPageToken is
       // returned.
-    } while (parameters.pageToken != null);
+    } while (config1.params.pageToken != null);
+  }
+  catch (err) {
 
-  } catch (err) {
     // If the error is a StatusCodeError, it contains an error.error object that
     // should be returned. It has a name, statuscode and message in the correct
     // format. Otherwise extract the properties.
-    error = err.error.error ||
-      { name: err.name, code: err.statusCode, message: err.message };
+
+    error = { name: err.name, code: err.response.status, message: err.message };
     console.log(error);
+    
   }
 
   console.log('Albums loaded.');
@@ -328,66 +342,6 @@ function returnPhotos(res, userId, data, searchParameter) {
     // Return the photos and parameters back int the response.
     res.status(200).send({ photos: data.photos, parameters: searchParameter });
   }
-}
-
-async function libraryApiSearch(authToken, parameters) {
-  let photos = [];
-  let nextPageToken = null;
-  let error = null;
-
-  parameters.pageSize = config.searchPageSize;
-
-  try {
-    // Loop while the number of photos threshold has not been met yet
-    // and while there is a nextPageToken to load more items.
-    do {
-      console.log(
-        `Submitting search with parameters: ${JSON.stringify(parameters)}`);
-
-      // Make a POST request to search the library or album
-      const result =
-        await request.post(config.apiEndpoint + '/v1/mediaItems:search', {
-          headers: { 'Content-Type': 'application/json' },
-          json: parameters,
-          auth: { 'bearer': authToken },
-        });
-
-      console.log(`Response: ${result}`);
-
-      // The list of media items returned may be sparse and contain missing
-      // elements. Remove all invalid elements.
-      // Also remove all elements that are not images by checking its mime type.
-      // Media type filters can't be applied if an album is loaded, so an extra
-      // filter step is required here to ensure that only images are returned.
-      const items = result && result.mediaItems ? result.mediaItems.filter(x => x) : // Filter empty or invalid items.
-        // Only keep media items with an image mime type.
-        // .filter(x => x.mimeType && x.mimeType.startsWith('image/')) :
-        [];
-
-      photos = photos.concat(items);
-
-      // Set the pageToken for the next request.
-      parameters.pageToken = result.nextPageToken;
-
-      console.log(
-        `Found ${items.length} images in this request. Total images: ${photos.length}`);
-
-      // Loop until the required number of photos has been loaded or until there
-      // are no more photos, ie. there is no pageToken.
-    } while (photos.length < config.photosToLoad &&
-      parameters.pageToken != null);
-
-  } catch (err) {
-    // If the error is a StatusCodeError, it contains an error.error object that
-    // should be returned. It has a name, statuscode and message in the correct
-    // format. Otherwise extract the properties.
-    error = err.error.error ||
-      { name: err.name, code: err.statusCode, message: err.message };
-    console.log(error);
-  }
-
-  console.log('Search complete.');
-  return { photos, parameters, error };
 }
 
 app.listen(8080, () => console.log('Listening on port 8080...'));
