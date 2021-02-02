@@ -7,7 +7,10 @@ const request = require('request-promise');
 const sessionFileStore = require('session-file-store');
 const { refreshToken } = require('./utils/tokens');
 const { Config } = require('./models/config');
+const { Album } = require('./models/album');
+const { Image } = require('./models/image');
 const axios = require('axios');
+const { dbSaveAlbums, dbRemoveAlbums, dbSaveImages, dbRemoveImages } = require('./utils/database');
 
 require("./startup/db")();
 //require("./utils/tokens")();
@@ -87,34 +90,41 @@ app.get('/', (req, res) => {
 });
 
 app.get('/getAlbums', async (req, res) => {
-  console.log('Loading albums...');
+  //console.log('Loading albums...');
   const userId = gUserId;//req.user.profile.id;
 
+  let data = {};
   // Attempt to load the albums from cache if available.
   // Temporarily caching the albums makes the app more responsive.
-  const cachedAlbums = await albumCache.getItem(userId);
-  if (cachedAlbums) {
-    console.log('Loaded albums from cache.');
-    res.status(200).send(cachedAlbums);
-  } else {
-    console.log('Loading albums from API.');
-    // Albums not in cache, retrieve the albums from the Library API
-    // and return them
 
-    const data = await libraryApiGetAlbums(gToken);
+  let t0 = new Date();
+  
+  // search in database
+  let albums = await Album.find({});
+
+  if (albums.length > 0 && ( parseInt((new Date()-albums[0].saveDate)/1000/60)) < 10) {
+    
+    data.sharedAlbums = albums;
+    res.status(200).send(data);
+
+    let t2 = new Date();
+    console.log('Loading', albums.length, 'albums from database... Done in', parseInt((new Date()-t0)), 'msec');
+  }
+  else{
+    dbRemoveAlbums(userId);
+    
+    t0 = new Date();
+    data = await libraryApiGetAlbums(gToken);
+    console.log('Loading ', data.sharedAlbums.length, 'albums from API... Done in', parseInt((new Date()-t0)), 'msec');
 
     if (data.error) {
       // Error occured during the request. Albums could not be loaded.
       returnError(res, data);
       // Clear the cached albums.
-      albumCache.removeItem(userId);
     } else {
       // Albums were successfully loaded from the API. Cache them
-      // temporarily to speed up the next request and return them.
-      // The cache implementation automatically clears the data when the TTL is
-      // reached.
+      await dbSaveAlbums(data.sharedAlbums, userId);
       res.status(200).send(data);
-      //albumCache.setItemSync(userId, data);
     }
   }
 });
@@ -131,35 +141,33 @@ async function libraryApiSearch(authToken, parameters) {
       console.log(
         `Submitting search with parameters: ${JSON.stringify(parameters)}`);
 
-      console.log('#########################before');
       let result = await axios.post(config.apiEndpoint + '/v1/mediaItems:search',
         parameters,
         {
           headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      console.log('############################after');
-
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+      
       result = result.data;
 
       console.log(`Response: ${result}`);
 
       let items = [];
       if (result && result.mediaItems) {
-      // The list of media items returned may be sparse and contain missing
-      // elements. Remove all invalid elements.
-      // Also remove all elements that are not images by checking its mime type.
-      // Media type filters can't be applied if an album is loaded, so an extra
-      // filter step is required here to ensure that only images are returned.
+        // The list of media items returned may be sparse and contain missing
+        // elements. Remove all invalid elements.
+        // Also remove all elements that are not images by checking its mime type.
+        // Media type filters can't be applied if an album is loaded, so an extra
+        // filter step is required here to ensure that only images are returned.
         items = result.mediaItems.filter(x => x);//result && result.mediaItems ?
-     //   result.mediaItems.filter(x => x) : []// Filter empty or invalid items.
-      //  // Only keep media items with an image mime type.
-      //  //.filter(x => x.mimeType && x.mimeType.startsWith('image/')) :
-      //  [];
+        //   result.mediaItems.filter(x => x) : []// Filter empty or invalid items.
+        //  // Only keep media items with an image mime type.
+        //  //.filter(x => x.mimeType && x.mimeType.startsWith('image/')) :
+        //  [];
 
-      photos = [...photos, ...items];
+        photos = [...photos, ...items];
 
       }
 
@@ -190,7 +198,7 @@ async function libraryApiGetAlbums(authToken) {
   let sharedAlbums = [];
   let nextPageToken = null;
   let error = null;
-  
+
   let config1 = {
     headers: {
       'Content-Type': 'application/json',
@@ -212,7 +220,7 @@ async function libraryApiGetAlbums(authToken) {
 
       let result = await axios.get(config.apiEndpoint + '/v1/sharedAlbums', config1);
       result = result.data;
-      
+
       if (result && result.sharedAlbums) {
         console.log(`Number of albums received: ${result.sharedAlbums.length}`);
         // Parse albums and add them to the list, skipping empty entries.
@@ -234,10 +242,13 @@ async function libraryApiGetAlbums(authToken) {
 
     error = { name: err.name, code: err.response.status, message: err.message };
     console.log(error);
-    
+
   }
 
   console.log('Albums loaded.');
+
+  //sharedAlbums = sharedAlbums.filter(x => )
+  //const items = sharedAlbums.filter(x => x);
   return { sharedAlbums, error };
 }
 
@@ -262,9 +273,33 @@ app.post('/loadFromAlbum/:id', async (req, res) => {
   // Note that no other filters can be set, so this search will
   // also return videos that are otherwise filtered out in libraryApiSearch(..).
   const parameters = { albumId };
+  let data = {};
 
-  // Submit the search request to the API and wait for the result.
-  const data = await libraryApiSearch(authToken, parameters);
+  // search in database
+  let images = await Image.find({albumId: albumId});
+
+  if (images.length > 0 && ( parseInt((new Date()-images[0].saveDate)/1000/60)) < 10) {
+  
+    console.log("Loading imases from database...");
+    //console.log(images[0]);
+
+    // for(let i = 0; i<images.length;i++){
+    //   images[i].mediaMetadata.height = images[i].height;
+    //   images[i].mediaMetadata.width = images[i].width;
+    //   images[i].mediaMetadata.creationTime = images[i].creationTime;
+    // }
+    data.photos = images;
+  }
+  else{
+
+    //console.log("no images found or too old");
+
+    await dbRemoveImages(albumId);
+    // Submit the search request to the API and wait for the result.
+    data = await libraryApiSearch(authToken, parameters);
+
+    await dbSaveImages(data.photos, albumId);
+  }
 
   returnPhotos(res, userId, data, parameters)
 });

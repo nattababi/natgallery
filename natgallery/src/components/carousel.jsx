@@ -57,7 +57,12 @@ class Carousel extends Component {
     return (
       <div style={{
         backgroundColor: 'black',
-      }} id="carouselExampleControls" className="carousel slide" data-ride="carousel">
+      }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="1500" data-wrap="true">
+
+  <ol className="carousel-indicators">{this.state.photos.map((item, index) => {
+    return <li key={item.id + '-' + index} data-target="#carouselExampleIndicators" data-slide-to={index} className={item.isActive ? "active" : ""}></li>;
+  })}
+  </ol>
 
         <div className="carousel-inner" style={{
           backgroundColor: 'red',
