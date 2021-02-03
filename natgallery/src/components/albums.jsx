@@ -1,18 +1,15 @@
 import React, { Component } from 'react';
-import { getAlbums } from '../services/googleService';
 import { Link } from 'react-router-dom';
 import Album from './album';
+import { inject, observer } from 'mobx-react';
 
+@inject('albumStore')
+@observer
 class Albums extends Component {
-  state = {
-    albums: []
-  }
-
   async componentDidMount() {
-    let albums = await getAlbums();
-    //console.log('COMING VALUE', tweets);
+    await this.props.albumStore.getAllAlbums();
 
-    albums = albums.filter(album => album.title);
+    //albums = albums.filter(album => album.title);
 
     // console.log('before sorting-1');
     // sort by mediaMetadata.creationTime
@@ -30,16 +27,18 @@ class Albums extends Component {
     // });
     // console.log('after sorting');
 
-    this.setState({ albums });
+    //this.setState({ albums });
 
   }
 
   render() {
+    console.log(this.props.albumStore.albums.length);
+
     return (
       // <div style={{display: 'flex', justifyContent: "space-around"}}>
       <div style={{}}>
 
-        {this.state.albums.map(item =>
+        {this.props.albumStore.albums.map(item =>
           <Album key={item.id} albumId={item.id} albumTitle={item.title} coverUrl={item.coverPhotoBaseUrl}>{item.title}</Album>
         )}
       </div>
