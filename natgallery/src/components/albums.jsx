@@ -4,8 +4,7 @@ import Album from './album';
 import { inject, observer } from 'mobx-react';
 
 @inject('albumStore')
-@observer
-class Albums extends Component {
+@observer class Albums extends Component {
   async componentDidMount() {
     await this.props.albumStore.getAllAlbums();
 
@@ -32,7 +31,7 @@ class Albums extends Component {
   }
 
   render() {
-    console.log(this.props.albumStore.albums.length);
+    console.log('render. array length=',this.props.albumStore.albums.length);
 
     return (
       // <div style={{display: 'flex', justifyContent: "space-around"}}>

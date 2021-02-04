@@ -7,7 +7,7 @@ const albumStore = new AlbumStore();
 const imageStore = new ImageStore();
 
 autorun(() => {
-  console.log('SETTING new user =>>::', userStore.user);
+  console.log('autorun:: albums =>>::', albumStore.albums.length);
 })
 
 export { albumStore, imageStore };

@@ -12,8 +12,8 @@ const { Image } = require('./models/image');
 const axios = require('axios');
 const { dbSaveAlbums, dbRemoveAlbums, dbSaveImages, dbRemoveImages } = require('./utils/database');
 
+
 require("./startup/db")();
-//require("./utils/tokens")();
 
 let gToken = "";
 let gUserId = "";
@@ -79,6 +79,51 @@ app.use(async (req, res, next) => {
   next();
 });
 
+
+// Axios.interceptors.response.use(
+//   response => response,
+//   (error) => {
+//     console.log("axios error");
+
+//     const status = error.response ? error.response.status : null;
+//     const originalRequest = error.config;
+
+//     if (status === 401) {
+//       console.log("axios 401");
+//       // if (!store.state.auth.isRefreshing) {
+//       //   store.dispatch('auth/refresh')
+//       // }
+
+//       const retryOrigReq = store.dispatch('auth/subscribe', token => {
+//         originalRequest.headers['Authorization'] = 'Bearer ' + token;
+//         Axios(originalRequest);
+//       });
+
+//       return retryOrigReq;
+//     }
+//     else{
+//       return Promise.reject(error)
+//     }
+//   }
+// )
+// axios.interceptors.response.use(null, (error) => {
+//   //console.log(error);
+
+//   if (error.config && error.response && error.response.status === 401 &&
+//       error.config.url !== "https://accounts.google.com/o/oauth2/token") {
+//     console.log("axios retry");
+//     return refreshToken().then((data) => {
+//       console.log("callback from refreshtoken", data.token);
+//       error.config.headers['Authorization'] = 'Bearer ' + data.token;
+//       gToken = data.token;
+//       gUserId = data.userId;
+//       return axios.request(error.config);
+//     });
+//   }
+
+//   return Promise.reject(error);
+// });
+
 app.get('/', (req, res) => {
   //res.send(passport);
   if (!req.user || !req.isAuthenticated()) {
@@ -128,6 +173,7 @@ app.get('/getAlbums', async (req, res) => {
     }
   }
 });
+
 
 async function libraryApiSearch(authToken, parameters) {
   let photos = [];
@@ -279,15 +325,7 @@ app.post('/loadFromAlbum/:id', async (req, res) => {
   let images = await Image.find({albumId: albumId});
 
   if (images.length > 0 && ( parseInt((new Date()-images[0].saveDate)/1000/60)) < 10) {
-  
     console.log("Loading imases from database...");
-    //console.log(images[0]);
-
-    // for(let i = 0; i<images.length;i++){
-    //   images[i].mediaMetadata.height = images[i].height;
-    //   images[i].mediaMetadata.width = images[i].width;
-    //   images[i].mediaMetadata.creationTime = images[i].creationTime;
-    // }
     data.photos = images;
   }
   else{

@@ -1,28 +1,12 @@
-import { observable, action, computed } from 'mobx';
-import auth from '../services/authService';
+import { observable, action } from 'mobx';
 
-export default class UserStore {
+export default class ImageStore {
   constructor() {
-    this.user = auth.getCurrentUser();
+    
   }
 
-  @observable user = {};
-  @computed get fullName() {
-    return this.user ? `${this.user.firstName} ${this.user.lastName}` : ""; 
-  };
-
-  @action login({ email, password }) {
-    console.log(this);
-    auth.login(email, password)
-    .then(() => {
-      this.user = auth.getCurrentUser();
-    });
-    console.log('New stored USER =', this.user);
+  @observable images = {};
+  @action getImages({ albumId }) {
   }
 
-  @action async logout() {
-    await auth.logout();
-    this.user = null;
-    console.log('New stored USER =', this.user);
-  }
 }
