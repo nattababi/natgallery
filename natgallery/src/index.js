@@ -8,9 +8,10 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.min';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <BrowserRouter><App /></BrowserRouter>
-  </React.StrictMode>,
+    <React.Fragment>
+      <BrowserRouter><App /></BrowserRouter>
+    </React.Fragment>
+  ,
   document.getElementById('root')
 );
 

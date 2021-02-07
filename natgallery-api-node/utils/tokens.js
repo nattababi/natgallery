@@ -7,12 +7,12 @@ async function getToken() {
 }
 
 async function refreshToken(){
-  console.log('refreshing token...');
+  console.log('Refreshing token...');
 
   // read all secret parameters from database
   let config = await Config.find().select("-__v");
 
-  console.log('config from database:', config);
+  //console.log('config from database:', config);
 
   let tokenDetails = await axios.post("https://accounts.google.com/o/oauth2/token",
     null, {

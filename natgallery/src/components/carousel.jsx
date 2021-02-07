@@ -1,74 +1,89 @@
 import React, { Component } from 'react';
 import { getAlbum } from '../services/googleService';
-//import CarouselPhotos from './carouselPhotos';
 import queryString from 'query-string';
+import { inject, observer } from 'mobx-react';
+import LoadingOverlay from 'react-loading-overlay';
 
+@inject('albumStore')
+@observer
 class Carousel extends Component {
-  state = {
-    photos: []
-  }
-  items = [];
-  isActiveAdded = false;
-
   async componentDidMount() {
-
     const parsed = queryString.parse(window.location.search);
-
-    let albumId = "";
-    let photos = [];
-    let imageId = "";
 
     if (parsed.album) {
       //search by album
-      albumId = parsed.album;
-    
-      photos = await getAlbum(albumId);
-      console.log('filtering images only');
-      photos = photos.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
-
-      console.log(photos.length);
-
-      if (parsed.image) {
-        imageId = parsed.image;
-      }
-      
-      // console.log("component did mount for album", albumId);
-      // console.log("component did mount for image", imageId);
-
-      if (imageId === "" && photos.length > 0){
-        imageId = photos[0].id;
-      }
-      
-      for (let i = 0; i < photos.length; i++) {
-        if (photos[i].id === imageId) {
-          photos[i].isActive = 1;
-          console.log("found", i)
-        }
-        else {
-          photos[i].isActive = 0;
-        }
-      }
-
-    this.setState({ photos });
+      await this.props.albumStore.cacheAlbumImages(parsed.album);
     }
+    else if (parsed.keyword) {
+      await this.props.imageStore.getSearch(parsed.keyword);
+    };
+
   }
 
   render() {
+    const parsed = queryString.parse(window.location.search);
+
+    if (!parsed.album) return (<div>No album defined</div>);
+
+    if (! this.props.albumStore.albums ){
+      return (
+        <LoadingOverlay
+          active={true}
+          spinner
+        text=''
+        >
+          <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
+          Reloading albums first...
+          </div>
+        </LoadingOverlay>
+      );
+    }
+
+    const album = this.props.albumStore.albums.find(x => x.id === parsed.album);
+
+    if (!album) return (<div>Invalid album ID</div>);
+
+    let images = album.images;
+
+    if (!images) return (<div>No images found</div>);
+
+    console.log('filtering images only');
+    images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
+
+    let imageId = "";
+
+    if (parsed.image) {
+      imageId = parsed.image;
+    }
+    else {
+      imageId = images[0].id;
+    }
+
+    // set active attribure for carousel
+    for (let i = 0; i < images.length; i++) {
+      if (images[i].id === imageId) {
+        images[i].isActive = 1;
+      }
+      else {
+        images[i].isActive = 0;
+      }
+    }
+    
     return (
       <div style={{
         backgroundColor: 'black',
-      }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="1500" data-wrap="true">
+      }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="1500" data-wrap="false">
 
-  <ol className="carousel-indicators">{this.state.photos.map((item, index) => {
-    return <li key={item.id + '-' + index} data-target="#carouselExampleIndicators" data-slide-to={index} className={item.isActive ? "active" : ""}></li>;
-  })}
-  </ol>
+        <ol className="carousel-indicators">{images.map((item, index) => {
+          return <li key={item.id + '-' + index} data-target="#carouselExampleIndicators" data-slide-to={index} className={item.isActive ? "active" : ""}></li>;
+        })}
+        </ol>
 
         <div className="carousel-inner" style={{
           backgroundColor: 'red',
         }}
         >
-          {this.state.photos.map(item =>
+          {images.map(item =>
             <div key={item.id + '-div'} className={item.isActive ? "carousel-item active" : "carousel-item"}
               style={{
                 backgroundColor: 'black',
@@ -81,7 +96,7 @@ class Carousel extends Component {
                   marginLeft: 'auto',
                   marginRight: 'auto',
                   display: 'block'
-                }} key={item.id} className="d-block w-800" src={item.baseUrl + '=w'+item.mediaMetadata.width + '-h' + item.mediaMetadata.height} alt="First slide" /> :
+                }} key={item.id} className="d-block w-800" src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height} alt="First slide" /> :
                 <iframe src="https://www.youtube.com/watch?v=NBJ0F1x9d48&list=PL9Dxzvu_wTzMMQ9ip057m5TMJvosVl-N9?autoplay=1" />
               }
             </div>)}

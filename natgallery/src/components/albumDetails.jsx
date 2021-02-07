@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
-import { getAlbum, getSearch } from '../services/googleService';
+//import { getAlbum, getSearch } from '../services/googleService';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import moment from 'moment';
+import { inject, observer } from 'mobx-react';
+import LoadingOverlay from 'react-loading-overlay';
 
-class Albumdetails extends Component {
-  state = {
-    photos: []
-  }
+@inject('albumStore')
+@observer
+class AlbumDetails extends Component {
   title = "";
   albumId = "";
 
   async componentDidMount() {
 
-    let photos = [];
-
+    //TODO: albums list read twice when navigating directly to album
     const parsed = queryString.parse(window.location.search);
 
     if (parsed.title) {
@@ -24,17 +24,12 @@ class Albumdetails extends Component {
     if (parsed.album) {
       //search by album
       this.albumId = parsed.album;
-      console.log('Calling getAlbum with ', this.albumId);
-
-      photos = await getAlbum(this.albumId);
+      await this.props.albumStore.cacheAlbumImages(this.albumId);
     }
-
     else if (parsed.keyword) {
-      console.log("SEARCH with=", parsed.keyword);
-      photos = await getSearch(parsed.keyword);
+      await this.props.imageStore.getSearch(parsed.keyword);
     };
 
-    this.setState({ photos });
   }
 
   GetAlbumDate(d1, d2){
@@ -53,54 +48,84 @@ class Albumdetails extends Component {
   }
 
   render() {
-    let title = this.title;
-    let albumId = "";
 
     const parsed = queryString.parse(window.location.search);
 
-    if (parsed.album) {
-      //search by album
-      albumId = parsed.album;
+    // todo: add search parsed.search
+    if (! parsed.album ) return (<div>No album defined</div>);
+
+    if (! this.props.albumStore.albums ){
+      return (
+        <LoadingOverlay
+          active={true}
+          spinner
+        text=''
+        >
+          <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
+          Reloading albums first...
+          </div>
+        </LoadingOverlay>
+      );
     }
 
+    const album = this.props.albumStore.albums.find(x => x.id === parsed.album);
+
+    if (! album ) return (<div>Invalid album ID</div>);
+
+    const title = album.title;
+    
     let strDateDisplay = '';
     
-    if (this.state.photos.length > 0) {
-      strDateDisplay = this.GetAlbumDate(this.state.photos[0].mediaMetadata.creationTime, this.state.photos[this.state.photos.length - 1].mediaMetadata.creationTime);
+    if (album.images && album.images.length !== 0){
+      strDateDisplay = this.GetAlbumDate(
+        album.images[0].mediaMetadata.creationTime,
+        album.images[album.images.length - 1].mediaMetadata.creationTime);
     }
-
+    
+    const isActive = (album.images) ? false : true;
+    
     return (
       <div>
-        <div>
-          <span className="m-2" style={{ fontSize: '34px' }}>{title}</span>
-          <span style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
-        </div>
-        {this.state.photos.map(item => (
-          <div key={item.id + '-div'} style={{
-            position: 'relative',
-            height: '200px',
-            margin: '4px',
-            overflow: 'hidden',
-            display: 'inline-block'
-          }}>
-            {item.mimeType.startsWith('image/') ?
-              <Link key={item.id + '-lnk'} to={"/carousel?album=" + albumId + "&image=" + item.id}>
-                <img className="" key={item.id + '-img'} src={item.baseUrl} style={{ height: '200px' }} />
-              </Link> :
+        <LoadingOverlay
+          active={isActive}
+          spinner
+          text=''>
 
-              <video
-                key={item.id + '-vid'}
-                src={item.baseUrl + '=dv'}
-                type={item.mimeType}
-                controls
-                style={{ height: '200px', padding: '2px', width: 'auto', backgroundColor: '#666' }} />}
+          <div>
+            <span className="m-2" style={{ fontSize: '34px' }}>{title}</span>
+            <span style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
           </div>
-        ))}
+
+          {isActive ?
+            <div style={{marginLeft: "8px"}}>Loading {album.mediaItemsCount} images...</div> :
+            album.images.map(item => (
+              <div key={item.id + '-div'} style={{
+                position: 'relative',
+                height: '200px',
+                margin: '4px',
+                overflow: 'hidden',
+                display: 'inline-block'
+              }}>
+                {item.mimeType.startsWith('image/') ?
+                  <Link key={item.id + '-lnk'} to={"/carousel?album=" + parsed.album + "&image=" + item.id}>
+                    <img className="" key={item.id + '-img'} src={item.baseUrl} style={{ height: '200px' }} />
+                  </Link> :
+                  <video
+                    key={item.id + '-vid'}
+                    src={item.baseUrl + '=dv'}
+                    type={item.mimeType}
+                    controls
+                    style={{ height: '200px', padding: '2px', width: 'auto', backgroundColor: '#666' }} />}
+              </div>
+            ))
+          }
+        </LoadingOverlay>
+        
       </div>
     );
   }
 }
 
-export default Albumdetails;
+export default AlbumDetails;
 
  //src={item.baseUrl + '=w256-h256'}

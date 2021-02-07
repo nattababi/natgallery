@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import Album from './album';
 import { inject, observer } from 'mobx-react';
+import LoadingOverlay from 'react-loading-overlay';
 
 @inject('albumStore')
-@observer class Albums extends Component {
+@observer
+class Albums extends Component {
   async componentDidMount() {
-    await this.props.albumStore.getAllAlbums();
-
+    
     //albums = albums.filter(album => album.title);
 
     // console.log('before sorting-1');
@@ -31,7 +31,24 @@ import { inject, observer } from 'mobx-react';
   }
 
   render() {
-    console.log('render. array length=',this.props.albumStore.albums.length);
+    if (!this.props.albumStore.albums) {
+      return (
+        <div>
+          <LoadingOverlay
+            active={true}
+            spinner
+            text=''
+            >
+            <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
+              Loading albums...
+            </div>
+          </LoadingOverlay>
+        </div>);
+    }
+
+    if (this.props.albumStore.albums.length < 1) {
+      return (<div>No albums found.</div>);
+    }
 
     return (
       // <div style={{display: 'flex', justifyContent: "space-around"}}>

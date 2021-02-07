@@ -1,17 +1,12 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Route } from 'react-router-dom';
-import Albums from './albums';
-import AlbumDetails from './albumDetails';
-import searchForm from './searchForm';
-import Carousel from './carousel';
 
 class Navbar extends Component {
   render() {
     return (
       <div>
         <nav className="navbar navbar-expand-sm navbar-light bg-light">
-          <Link className="navbar-brand" to="#">Natgallery</Link>
+          <Link className="navbar-brand" to="/">Natgallery</Link>
           <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
@@ -30,13 +25,6 @@ class Navbar extends Component {
             </ul>
           </div>
         </nav>
-
-        <div>
-          <Route path="/albums" component={Albums} />
-          <Route path="/albumdetails" component={AlbumDetails} />
-          <Route path="/search" component={searchForm} />
-          <Route path="/carousel" component={Carousel} />
-        </div>
       </div>
     );
   }

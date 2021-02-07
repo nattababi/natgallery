@@ -2,9 +2,7 @@ const express = require('express');
 const config = require('./config.js');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const persist = require('node-persist');
 const request = require('request-promise');
-const sessionFileStore = require('session-file-store');
 const { refreshToken } = require('./utils/tokens');
 const { Config } = require('./models/config');
 const { Album } = require('./models/album');
@@ -12,31 +10,21 @@ const { Image } = require('./models/image');
 const axios = require('axios');
 const { dbSaveAlbums, dbRemoveAlbums, dbSaveImages, dbRemoveImages } = require('./utils/database');
 
+const app = express();
 
 require("./startup/db")();
+require("./startup/cors")(app);
 
 let gToken = "";
 let gUserId = "";
 
-const app = express();
+// clear token every 50 minutes
+//var myVar = setInterval(clearToken, 50*60*1000);
 
-const fileStore = sessionFileStore(session);
-
-const albumCache = persist.create({
-  dir: 'persist-albumcache/',
-  ttl: 600000,  // 10 minutes
-});
-albumCache.init();
-
-// Set up a session middleware to handle user sessions.
-// NOTE: A secret is used to sign the cookie. This is just used for this sample
-// app and should be changed.
-const sessionMiddleware = session({
-  resave: true,
-  saveUninitialized: true,
-  store: new fileStore({}),
-  secret: 'photo sample',
-});
+function clearToken (){
+  console.log("Clear token", Date());
+  gToken = "";
+}
 
 // Parse application/json request data.
 app.use(bodyParser.json());
@@ -44,36 +32,15 @@ app.use(bodyParser.json());
 // Parse application/xwww-form-urlencoded request data.
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Enable user session handling.
-app.use(sessionMiddleware);
-
-// Middleware that adds the user of this session as a local variable,
-// so it can be displayed on all pages when logged in.
-app.use((req, res, next) => {
-  res.locals.name = '-';
-  if (req.user && req.user.profile && req.user.profile.name) {
-    res.locals.name =
-      req.user.profile.name.givenName || req.user.profile.displayName;
-  }
-
-  res.locals.avatarUrl = '';
-  if (req.user && req.user.profile && req.user.profile.photos) {
-    res.locals.avatarUrl = req.user.profile.photos[0].value;
-  }
-  next();
-});
-
 app.use(async (req, res, next) => {
 
   if (gToken === "") {
-
     const data = await refreshToken();
-
-    console.log("return from refreshToken", data);
-
     gToken = data.token;
     gUserId = data.userId;
 
+    // clear token in 50 minutes
+    setTimeout(clearToken, 50*60*1000);
   }
 
   next();
@@ -135,6 +102,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/getAlbums', async (req, res) => {
+  console.log(`---------------------------`);
   //console.log('Loading albums...');
   const userId = gUserId;//req.user.profile.id;
 
@@ -147,13 +115,15 @@ app.get('/getAlbums', async (req, res) => {
   // search in database
   let albums = await Album.find({});
 
-  if (albums.length > 0 && ( parseInt((new Date()-albums[0].saveDate)/1000/60)) < 10) {
+  // store 29 minutes in the database
+  if (albums.length > 0 && ( parseInt((new Date()-albums[0].saveDate)/1000/60)) < 29) {
     
     data.sharedAlbums = albums;
     res.status(200).send(data);
 
-    let t2 = new Date();
     console.log('Loading', albums.length, 'albums from database... Done in', parseInt((new Date()-t0)), 'msec');
+    console.log('Saved time=', parseInt(new Date() - albums[0].saveDate)/1000/60, 'minutes ago');
+    
   }
   else{
     dbRemoveAlbums(userId);
@@ -172,6 +142,7 @@ app.get('/getAlbums', async (req, res) => {
       res.status(200).send(data);
     }
   }
+  console.log(`---------------------------`);
 });
 
 
@@ -180,12 +151,14 @@ async function libraryApiSearch(authToken, parameters) {
   let nextPageToken = null;
   let error = null;
 
+  let t0 = new Date();
+
   try {
     // Loop while the number of photos threshold has not been met yet
     // and while there is a nextPageToken to load more items.
     do {
-      console.log(
-        `Submitting search with parameters: ${JSON.stringify(parameters)}`);
+      //console.log(
+      //  `Submitting search with parameters: ${JSON.stringify(parameters)}`);
 
       let result = await axios.post(config.apiEndpoint + '/v1/mediaItems:search',
         parameters,
@@ -198,7 +171,7 @@ async function libraryApiSearch(authToken, parameters) {
       
       result = result.data;
 
-      console.log(`Response: ${result}`);
+      //console.log(`Response: ${result}`);
 
       let items = [];
       if (result && result.mediaItems) {
@@ -220,8 +193,8 @@ async function libraryApiSearch(authToken, parameters) {
       // Set the pageToken for the next request.
       parameters.pageToken = result.nextPageToken;
 
-      console.log(
-        `Found ${items.length} images in this request. Total images: ${photos.length}`);
+      //console.log(
+      //  `Found ${items.length} images in this request. Total images: ${photos.length}`);
 
       // Loop until the required number of photos has been loaded or until there
       // are no more photos, ie. there is no pageToken.
@@ -236,7 +209,9 @@ async function libraryApiSearch(authToken, parameters) {
     console.log(error);
   }
 
-  console.log('Search complete.');
+  console.log('Google API respond in', parseInt((new Date()-t0)), 'msec');
+
+  //console.log('Search complete.');
   return { photos, parameters, error };
 }
 
@@ -244,6 +219,7 @@ async function libraryApiGetAlbums(authToken) {
   let sharedAlbums = [];
   let nextPageToken = null;
   let error = null;
+
 
   let config1 = {
     headers: {
@@ -312,6 +288,7 @@ app.post('/loadFromAlbum/:id', async (req, res) => {
   const userId = gUserId;
   const authToken = gToken;
 
+  console.log(`---------------------------`);
   console.log(`Importing album: ${albumId}`);
 
   // To list all media in an album, construct a search request
@@ -321,17 +298,18 @@ app.post('/loadFromAlbum/:id', async (req, res) => {
   const parameters = { albumId };
   let data = {};
 
+  let t0 = new Date();
   // search in database
   let images = await Image.find({albumId: albumId});
 
-  if (images.length > 0 && ( parseInt((new Date()-images[0].saveDate)/1000/60)) < 10) {
-    console.log("Loading imases from database...");
+  // store images 40 minutes in the database
+  if (images.length > 0 && ( parseInt((new Date()-images[0].saveDate)/1000/60)) < 40) {
+    console.log('Loading', images.length, 'images from database... Done in', parseInt((new Date()-t0)), 'msec');
+    console.log('Saved time=', parseInt(new Date() - images[0].saveDate)/1000/60, 'minutes ago');
     data.photos = images;
   }
   else{
-
     //console.log("no images found or too old");
-
     await dbRemoveImages(albumId);
     // Submit the search request to the API and wait for the result.
     data = await libraryApiSearch(authToken, parameters);
@@ -339,6 +317,7 @@ app.post('/loadFromAlbum/:id', async (req, res) => {
     await dbSaveImages(data.photos, albumId);
   }
 
+  console.log(`---------------------------`);
   returnPhotos(res, userId, data, parameters)
 });
 

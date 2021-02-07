@@ -20,13 +20,14 @@ axios.interceptors.response.use(null, error => {
 export async function getAlbums() {
   console.log(GOOGLE_API_URL + "getAlbums/");
   const { data } = await axios.get(GOOGLE_API_URL + "getAlbums/");
+
   console.log(data.sharedAlbums);
   return data.sharedAlbums;
 }
 
 export async function getAlbum(id) {
   const { data } = await axios.post(GOOGLE_API_URL + "loadFromAlbum/" + id);
-  console.log(data.photos);
+  console.log("await return from axios", data.photos);
   return data.photos;
 }
 
