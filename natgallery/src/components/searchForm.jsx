@@ -30,7 +30,6 @@ class RegisterForm extends Form {
   doSubmit = async () => {
     console.log('do submit');
 
-
     console.log(this.selected.join(","));
 
     window.location = "/albumDetails?keyword=" + this.selected.join(",");
@@ -54,6 +53,8 @@ class RegisterForm extends Form {
       <form onSubmit={this.handleSubmit}>
         <div className="input-group mb-3">
           <div className="input-group-prepend">
+
+            {this.renderButton("Search")}
 
             <div className="input-group-text">
               <input type="checkbox" name="nature" onClick={this.filterHandler} />
@@ -97,8 +98,10 @@ class RegisterForm extends Form {
 
           </div>
           <input type="text" className="form-control" aria-label="Text input with checkbox" />
+        
+          
         </div>
-        {this.renderButton("Search")}
+        
       </form>
 
     </div>);

@@ -27,7 +27,7 @@ class AlbumDetails extends Component {
       await this.props.albumStore.cacheAlbumImages(this.albumId);
     }
     else if (parsed.keyword) {
-      await this.props.imageStore.getSearch(parsed.keyword);
+      await this.props.albumStore.cacheSearchImages(parsed.keyword);
     };
 
   }
@@ -51,41 +51,50 @@ class AlbumDetails extends Component {
 
     const parsed = queryString.parse(window.location.search);
 
-    // todo: add search parsed.search
-    if (!parsed.album) return (<div>No album defined</div>);
-
-    if (!this.props.albumStore.albums) {
-      return (
-        <LoadingOverlay
-          active={true}
-          spinner
-          text=''
-        >
-          <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
-            Loading albums first...
-          </div>
-        </LoadingOverlay>
-      );
+    if (!parsed.album && !parsed.keyword){
+      return (<div>No album or keyword defined</div>);
     }
 
-    const album = this.props.albumStore.albums.find(x => x.id === parsed.album);
-
-    if (!album) return (<div>Invalid album ID</div>);
-
-    const title = album.title;
-
+    let images = [];
+    let album = null;
+    let title = "";
     let strDateDisplay = '';
 
-    // load current images
-    //await async 
-
-    if (album.images && album.images.length !== 0) {
-      strDateDisplay = this.GetAlbumDate(
-        album.images[0].mediaMetadata.creationTime,
-        album.images[album.images.length - 1].mediaMetadata.creationTime);
+    if (parsed.keyword){
+      images = this.props.albumStore.searchImages;
+      title = "Search";
+      strDateDisplay = parsed.keyword;
+    }
+    else{
+      if (!this.props.albumStore.albums) {
+        return (
+          <LoadingOverlay active={true} spinner text=''>
+            <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
+              Loading albums...
+            </div>
+          </LoadingOverlay>
+        );
+      }
+  
+      album = this.props.albumStore.albums.find(x => x.id === parsed.album);
+  
+      if (!album) return (<div>Invalid album ID</div>);
+  
+      title = album.title;
+  
+      // load current images
+      //await async 
+  
+      if (album.images && album.images.length !== 0) {
+        strDateDisplay = this.GetAlbumDate(
+          album.images[0].mediaMetadata.creationTime,
+          album.images[album.images.length - 1].mediaMetadata.creationTime);
+      }
+  
+      images = album.images;
     }
 
-    const isActive = (album.images) ? false : true;
+    const isActive = (images) ? false : true;
 
     return (
       <div>
@@ -97,8 +106,8 @@ class AlbumDetails extends Component {
           </div>
 
           {isActive ?
-            <div style={{ marginLeft: "8px" }}>Loading {album.mediaItemsCount} images...</div> :
-            album.images.map(item => (
+            <div style={{ marginLeft: "8px" }}>Loading {album? album.mediaItemsCount : ""} images...</div> :
+            images.map(item => (
               <div key={item.id + '-div'} style={{ position: 'relative', height: '200px', margin: '4px', overflow: 'hidden', display: 'inline-block' }}>
                 {item.mimeType.startsWith('image/') ?
                   <Link key={item.id + '-lnk'} to={"/carousel?album=" + parsed.album + "&image=" + item.id}>
