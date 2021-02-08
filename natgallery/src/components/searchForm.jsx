@@ -19,7 +19,7 @@ class RegisterForm extends Form {
     if (checked) {
       this.selected.push(name);
     }
-    else{
+    else {
       this.selected.splice(this.selected.indexOf(name), 1);
     }
 
@@ -54,17 +54,17 @@ class RegisterForm extends Form {
       <form onSubmit={this.handleSubmit}>
         <div className="input-group mb-3">
           <div className="input-group-prepend">
-            
+
             <div className="input-group-text">
               <input type="checkbox" name="nature" onClick={this.filterHandler} />
               <label className="mt-2 m-2">Nature</label>
             </div>
-            
+
             <div className="input-group-text">
               <input type="checkbox" name="selfies" onClick={this.filterHandler} />
               <label className="mt-2 m-2">Selfies</label>
             </div>
-            
+
             <div className="input-group-text">
               <input type="checkbox" name="food" onClick={this.filterHandler} />
               <label className="mt-2 m-2">Food</label>

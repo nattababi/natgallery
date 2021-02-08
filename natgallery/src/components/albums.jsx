@@ -59,7 +59,7 @@ class Albums extends Component {
             albumId={item.id}
             albumTitle={item.title}
             coverUrl={item.coverPhotoBaseUrl}
-            mediaItemsCount={item.mediaItemsCount}>{item.title}</Album>
+            mediaItemsCount={item.mediaItemsCount}/>
         )}
       </div>
     );

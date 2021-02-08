@@ -61,9 +61,6 @@ class Carousel extends Component {
       return (<div>No images found</div>);
     }
 
-    console.log("!!!!!!!!", images);
-
-    console.log('filtering images only');
     images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
 
     let imageId = "";
@@ -86,9 +83,7 @@ class Carousel extends Component {
     }
     
     return (
-      <div style={{
-        backgroundColor: 'black',
-      }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="1500" data-wrap="false">
+      <div style={{backgroundColor: 'black'}} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="5000" data-wrap="false" keyboard="true" ride="true">
 
         
 
@@ -116,7 +111,7 @@ class Carousel extends Component {
               }
               <div style={{ margin: '4px 4px 4px 4px'}} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '100%', height: '70px', padding: '18px' }}>
               </div>
-              <div style={{ position: 'absolute', bottom: '25px', left: '50%', fontSize: '12px',color: '#F0F0F2' }}>{index + 1}&#x2f;{arrayobj.length}</div>
+              <div style={{ position: 'absolute', bottom: '35px', left: '50%', fontSize: '12px',color: '#F0F0F2' }}>{index + 1}&#x2f;{arrayobj.length}</div>
             </div>)}
         </div>
 
