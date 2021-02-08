@@ -119,8 +119,9 @@ app.get('/getAlbums', async (req, res) => {
   if (albums.length > 0 && ( parseInt((new Date()-albums[0].saveDate)/1000/60)) < 29) {
     
     data.sharedAlbums = albums;
+    
     res.status(200).send(data);
-
+    
     console.log('Loading', albums.length, 'albums from database... Done in', parseInt((new Date()-t0)), 'msec');
     console.log('Saved time=', parseInt(new Date() - albums[0].saveDate)/1000/60, 'minutes ago');
     
@@ -180,8 +181,14 @@ async function libraryApiSearch(authToken, parameters) {
         // Also remove all elements that are not images by checking its mime type.
         // Media type filters can't be applied if an album is loaded, so an extra
         // filter step is required here to ensure that only images are returned.
-        items = result.mediaItems.filter(x => x);//result && result.mediaItems ?
-        //   result.mediaItems.filter(x => x) : []// Filter empty or invalid items.
+        
+        //items = result.mediaItems.filter(x => x);//result && result.mediaItems ?
+        //const items2 = result.mediaItems.filter(x => !x);
+        //console.log("items filtered", items2.length);
+
+        //console.log('------before filter-', result.mediaItems.length);
+        items = result.mediaItems.filter(x => x);// Filter empty or invalid items.
+        //console.log('------after filter-', items.length);
         //  // Only keep media items with an image mime type.
         //  //.filter(x => x.mimeType && x.mimeType.startsWith('image/')) :
         //  [];
@@ -190,6 +197,7 @@ async function libraryApiSearch(authToken, parameters) {
 
       }
 
+      //console.log("photos length=", photos.length, "next token=", result.nextPageToken);
       // Set the pageToken for the next request.
       parameters.pageToken = result.nextPageToken;
 
@@ -205,6 +213,8 @@ async function libraryApiSearch(authToken, parameters) {
     // If the error is a StatusCodeError, it contains an error.error object that
     // should be returned. It has a name, statuscode and message in the correct
     // format. Otherwise extract the properties.
+    
+    // TODO: check when err.response is nothing 
     error = { name: err.name, code: err.response.status, message: err.message };
     console.log(error);
   }

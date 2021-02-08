@@ -55,7 +55,11 @@ class Albums extends Component {
       <div style={{}}>
 
         {this.props.albumStore.albums.map(item =>
-          <Album key={item.id} albumId={item.id} albumTitle={item.title} coverUrl={item.coverPhotoBaseUrl}>{item.title}</Album>
+          <Album key={item.id}
+            albumId={item.id}
+            albumTitle={item.title}
+            coverUrl={item.coverPhotoBaseUrl}
+            mediaItemsCount={item.mediaItemsCount}>{item.title}</Album>
         )}
       </div>
     );
