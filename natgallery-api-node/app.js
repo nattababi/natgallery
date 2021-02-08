@@ -115,8 +115,8 @@ app.get('/getAlbums', async (req, res) => {
   // search in database
   let albums = await Album.find({});
 
-  // store 29 minutes in the database
-  if (albums.length > 0 && ( parseInt((new Date()-albums[0].saveDate)/1000/60)) < 29) {
+  // store 25 minutes in the database
+  if (albums.length > 0 && ( parseInt((new Date()-albums[0].saveDate)/1000/60)) < 25) {
     
     data.sharedAlbums = albums;
     
