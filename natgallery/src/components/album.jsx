@@ -35,7 +35,6 @@ class Album extends Component {
           margin: '4px 4px 4px 4px',
         }}
           key={this.props.albumId + '-ttl'} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '300px', height: '70px', padding: '18px' }}>
-          {/* <h1>{this.props.children}</h1> */}
           <div style={{}}>
             <div style={{ marginTop: '5px'}} >{this.props.children}</div>
             <div style={{marginTop: '-3px', color: '#9C9EA1', align: 'left', fontSize: '12px'}}>{this.props.mediaItemsCount} items</div>

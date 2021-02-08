@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-//import { getAlbum, getSearch } from '../services/googleService';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import moment from 'moment';
@@ -24,6 +23,7 @@ class AlbumDetails extends Component {
     if (parsed.album) {
       //search by album
       this.albumId = parsed.album;
+      console.log("cdm-try to load images");
       await this.props.albumStore.cacheAlbumImages(this.albumId);
     }
     else if (parsed.keyword) {
@@ -62,7 +62,7 @@ class AlbumDetails extends Component {
         text=''
         >
           <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
-          Reloading albums first...
+          Loading albums first...
           </div>
         </LoadingOverlay>
       );
@@ -75,6 +75,9 @@ class AlbumDetails extends Component {
     const title = album.title;
     
     let strDateDisplay = '';
+    
+    // load current images
+    //await async 
     
     if (album.images && album.images.length !== 0){
       strDateDisplay = this.GetAlbumDate(

@@ -25,15 +25,15 @@ class Carousel extends Component {
 
     if (!parsed.album) return (<div>No album defined</div>);
 
-    if (! this.props.albumStore.albums ){
+    if ((! this.props.albumStore.albums) || (this.props.albumStore.albums.images)){
       return (
         <LoadingOverlay
           active={true}
           spinner
-        text=''
+          text=''
         >
           <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
-          Reloading albums first...
+          Loading albums first...
           </div>
         </LoadingOverlay>
       );
@@ -45,7 +45,23 @@ class Carousel extends Component {
 
     let images = album.images;
 
-    if (!images) return (<div>No images found</div>);
+    if (!images){
+      return <LoadingOverlay
+          active={true}
+          spinner
+          text=''
+        >
+          <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
+          Loading images...
+          </div>
+        </LoadingOverlay>
+    }
+    
+    if (images && images.count === 0){
+      return (<div>No images found</div>);
+    }
+
+    console.log("!!!!!!!!", images);
 
     console.log('filtering images only');
     images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
@@ -92,11 +108,15 @@ class Carousel extends Component {
                 <img style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}
                   key={item.id} className="d-block w-800"
                   src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
-                  alt="Alt slide" />
-                <div style={{ position: 'absolute', bottom: '25px', left: '50%', fontSize: '12px',color: 'white' }}>{index + 1}&#x2f;{arrayobj.length}</div>
+                  alt="Alt slide" />      
               </div> :
                 <iframe src="https://www.youtube.com/watch?v=NBJ0F1x9d48&list=PL9Dxzvu_wTzMMQ9ip057m5TMJvosVl-N9?autoplay=1" />
+              
+                
               }
+              <div style={{ margin: '4px 4px 4px 4px'}} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '100%', height: '70px', padding: '18px' }}>
+              </div>
+              <div style={{ position: 'absolute', bottom: '25px', left: '50%', fontSize: '12px',color: '#F0F0F2' }}>{index + 1}&#x2f;{arrayobj.length}</div>
             </div>)}
         </div>
 

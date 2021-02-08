@@ -19,10 +19,12 @@ export default class AlbumStore {
     // todo: check albums for null
 
     if (!this.albums){
-      await this.cacheAlbums()
+      await this.cacheAlbums();
+      console.log("store:albums loaded", this.albums.length);
     }
-    
+
     const album = this.albums.find(x => x.id === albumId);
+    console.log("store:load images to", album);
     album.images = await getAlbum(albumId);
     
   }
