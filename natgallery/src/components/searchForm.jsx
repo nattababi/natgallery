@@ -97,8 +97,7 @@ class RegisterForm extends Form {
             </div>
 
           </div>
-          <input type="text" className="form-control" aria-label="Text input with checkbox" />
-        
+          
           
         </div>
         

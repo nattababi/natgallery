@@ -4,6 +4,7 @@ import queryString from 'query-string';
 import moment from 'moment';
 import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
+import SearchForm from './searchForm';
 
 @inject('albumStore')
 @observer
@@ -51,7 +52,7 @@ class AlbumDetails extends Component {
 
     const parsed = queryString.parse(window.location.search);
 
-    if (!parsed.album && !parsed.keyword){
+    if (!parsed.album && !parsed.keyword) {
       return (<div>No album or keyword defined</div>);
     }
 
@@ -60,12 +61,12 @@ class AlbumDetails extends Component {
     let title = "";
     let strDateDisplay = '';
 
-    if (parsed.keyword){
+    if (parsed.keyword) {
       images = this.props.albumStore.searchImages;
-      title = "Search";
-      strDateDisplay = parsed.keyword;
+      //title = "Search";
+      //strDateDisplay = parsed.keyword;
     }
-    else{
+    else {
       if (!this.props.albumStore.albums) {
         return (
           <LoadingOverlay active={true} spinner text=''>
@@ -75,22 +76,22 @@ class AlbumDetails extends Component {
           </LoadingOverlay>
         );
       }
-  
+
       album = this.props.albumStore.albums.find(x => x.id === parsed.album);
-  
+
       if (!album) return (<div>Invalid album ID</div>);
-  
+
       title = album.title;
-  
+
       // load current images
       //await async 
-  
+
       if (album.images && album.images.length !== 0) {
         strDateDisplay = this.GetAlbumDate(
           album.images[0].mediaMetadata.creationTime,
           album.images[album.images.length - 1].mediaMetadata.creationTime);
       }
-  
+
       images = album.images;
     }
 
@@ -100,13 +101,16 @@ class AlbumDetails extends Component {
       <div>
         <LoadingOverlay active={isActive} spinner text=''>
 
-          <div>
-            <span key={'span-1'} className="m-2" style={{ fontSize: '34px' }}>{title}</span>
-            <span key={'span-2'} style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
-          </div>
+          {parsed.keyword ?
+            <SearchForm /> :
+            <div>
+              <span key={'span-1'} className="m-2" style={{ fontSize: '34px' }}>{title}</span>
+              <span key={'span-2'} style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
+            </div>
+          }
 
           {isActive ?
-            <div style={{ marginLeft: "8px" }}>Loading {album? album.mediaItemsCount : ""} images...</div> :
+            <div style={{ marginLeft: "8px" }}>Loading {album ? album.mediaItemsCount : ""} images...</div> :
             images.map(item => (
               <div key={item.id + '-div'} style={{ position: 'relative', height: '200px', margin: '4px', overflow: 'hidden', display: 'inline-block' }}>
                 {item.mimeType.startsWith('image/') ?
