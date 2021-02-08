@@ -74,16 +74,13 @@ class Carousel extends Component {
         backgroundColor: 'black',
       }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="1500" data-wrap="false">
 
-        <ol className="carousel-indicators">{images.map((item, index) => {
-          return <li key={item.id + '-' + index} data-target="#carouselExampleIndicators" data-slide-to={index} className={item.isActive ? "active" : ""}></li>;
-        })}
-        </ol>
+        
 
         <div className="carousel-inner" style={{
           backgroundColor: 'red',
         }}
         >
-          {images.map(item =>
+          {images.map((item, index,arrayobj) =>
             <div key={item.id + '-div'} className={item.isActive ? "carousel-item active" : "carousel-item"}
               style={{
                 backgroundColor: 'black',
@@ -91,12 +88,13 @@ class Carousel extends Component {
               }}
             >
               {item.mimeType.startsWith('image/') ?
-                <img style={{
-                  height: '630px',
-                  marginLeft: 'auto',
-                  marginRight: 'auto',
-                  display: 'block'
-                }} key={item.id} className="d-block w-800" src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height} alt="First slide" /> :
+                <div style={{ position: 'relative', textAlign: 'center', }}>
+                <img style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}
+                  key={item.id} className="d-block w-800"
+                  src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
+                  alt="Alt slide" />
+                <div style={{ position: 'absolute', bottom: '25px', left: '50%', fontSize: '12px',color: 'white' }}>{index + 1}&#x2f;{arrayobj.length}</div>
+              </div> :
                 <iframe src="https://www.youtube.com/watch?v=NBJ0F1x9d48&list=PL9Dxzvu_wTzMMQ9ip057m5TMJvosVl-N9?autoplay=1" />
               }
             </div>)}
@@ -118,65 +116,3 @@ class Carousel extends Component {
 
 export default Carousel;
 
-
-// item =>
-//            <div key={item.id + '-div'} className={item.isActive ? "carousel-item active" : "carousel-item"}
-//              style={{
-//                backgroundColor: 'black',
-//
-//                border: 'solid 1px #000'
-//              }}
-//            >
-//              {item.mimeType === 'image/jpeg' ?
-//                <img style={{
-//                  height: '500px',
-//                  marginLeft: 'auto',
-//                  marginRight: 'auto',
-//                  display: 'block'
-//                }} key={item.id} className="d-block w-800" src={item.baseUrl} alt="First slide" /> :
-//                <iframe src="https://www.youtube.com/watch?v=NBJ0F1x9d48&list=PL9Dxzvu_wTzMMQ9ip057m5TMJvosVl-N9?autoplay=1" />
-//              }
-//            </div>
-
-
-
-
-// import React, { Component } from 'react';
-// import { getAlbum } from '../services/googleService';
-// import CarouselPhotos from './carouselPhotos';
-
-// class Carousel extends Component {
-//   state = {
-//     photos: []
-//   }
-//   items = [];
-//   isActiveAdded = false;
-
-//   async componentDidMount() {
-//     let albumId = this.props.match.params.id;
-
-//     // console.log(albumId);
-
-//     let photos = await getAlbum(albumId);
-
-//     photos = photos.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
-
-//     for (let i = 0; i<photos.length; i++){
-//       if (photos[i].id === this.props.match.params.imageId){
-//         photos[i].isActive = 1;
-//       }
-//       else{
-//         photos[i].isActive = 0;
-//       }
-//     }
-
-//     this.setState({ photos });
-//   }
-//   render() {
-//     return (
-//       <CarouselPhotos />
-//     );
-//   }
-// }
-
-// export default Carousel;

@@ -312,8 +312,8 @@ app.post('/loadFromAlbum/:id', async (req, res) => {
   // search in database
   let images = await Image.find({albumId: albumId});
 
-  // store images 40 minutes in the database
-  if (images.length > 0 && ( parseInt((new Date()-images[0].saveDate)/1000/60)) < 40) {
+  // store images 35 minutes in the database
+  if (images.length > 0 && ( parseInt((new Date()-images[0].saveDate)/1000/60)) < 35) {
     console.log('Loading', images.length, 'images from database... Done in', parseInt((new Date()-t0)), 'msec');
     console.log('Saved time=', parseInt(new Date() - images[0].saveDate)/1000/60, 'minutes ago');
     data.photos = images;
