@@ -23,7 +23,14 @@ class Album extends Component {
 
           <Link key={this.props.albumId} to={'/albumdetails?album=' + this.props.albumId + '&title=' + this.props.albumTitle} >
             
-            <img key={this.props.albumId + '-img'} src={this.props.coverUrl} style={{ width: '300px', borderRadius: '0%', margin: '0 0 0 0' }} />
+            <div style={{  
+              backgroundImage: "url(" + this.props.coverUrl + ")",
+              backgroundPosition: '0% 25%',
+              backgroundSize: 'cover',
+              backgroundRepeat: 'no-repeat',
+              width: '300px', height: '200px', borderRadius: '1%', margin: '0 0 0 0'
+            }}>
+            </div>
           
             <div style={{ margin: '4px 4px 4px 4px' }} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '300px', height: '70px', padding: '20px' }}>
               <div style={{ marginTop: '0px', width: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} >{ this.props.albumTitle}</div>
@@ -44,4 +51,4 @@ class Album extends Component {
 
 export default Album;
 
-//(this.props.albumTitle.length) > 32 ? this.props.albumTitle.slice(0,29) + "..." : 
+//<img key={this.props.albumId + '-img'} src={this.props.coverUrl} style={{ width: '300px', borderRadius: '1%', margin: '0 0 0 0' }} />

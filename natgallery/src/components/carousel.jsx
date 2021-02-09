@@ -15,7 +15,7 @@ class Carousel extends Component {
       await this.props.albumStore.cacheAlbumImages(parsed.album);
     }
     else if (parsed.keyword) {
-      await this.props.imageStore.getSearch(parsed.keyword);
+      await this.props.albumStore.cacheSearchImages(parsed.keyword);
     };
 
   }
@@ -23,9 +23,9 @@ class Carousel extends Component {
   render() {
     const parsed = queryString.parse(window.location.search);
 
-    if (!parsed.album) return (<div>No album defined</div>);
+    if (!parsed.album && !parsed.keyword) return (<div>No album or keyword defined</div>);
 
-    if ((! this.props.albumStore.albums) || (this.props.albumStore.albums.images)){
+    if (parsed.album && ((! this.props.albumStore.albums) || (this.props.albumStore.albums.images))){
       return (
         <LoadingOverlay
           active={true}
@@ -33,17 +33,27 @@ class Carousel extends Component {
           text=''
         >
           <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
-          Loading albums first...
+          Loading albums...
           </div>
         </LoadingOverlay>
       );
     }
+    
+    let images = null;
+    if (parsed.album){
+      const album = this.props.albumStore.albums.find(x => x.id === parsed.album);
 
-    const album = this.props.albumStore.albums.find(x => x.id === parsed.album);
+      if (!album) return (<div>Invalid album ID</div>);
 
-    if (!album) return (<div>Invalid album ID</div>);
-
-    let images = album.images;
+      images = album.images;
+    }
+    
+    if (parsed.keyword){
+      images = this.props.albumStore.searchImages;
+    }
+    else{
+    
+    }
 
     if (!images){
       return <LoadingOverlay
@@ -92,7 +102,7 @@ class Carousel extends Component {
         }}
         >
           {images.map((item, index,arrayobj) =>
-            <div key={item.id + '-div'} className={item.isActive ? "carousel-item active" : "carousel-item"}
+            <div className={item.isActive ? "carousel-item active" : "carousel-item"}
               style={{
                 backgroundColor: 'black',
                 border: 'solid 1px #000'

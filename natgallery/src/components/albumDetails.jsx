@@ -114,7 +114,10 @@ class AlbumDetails extends Component {
             images.map(item => (
               <div key={item.id + '-div'} style={{ position: 'relative', height: '200px', margin: '4px', overflow: 'hidden', display: 'inline-block' }}>
                 {item.mimeType.startsWith('image/') ?
-                  <Link key={item.id + '-lnk'} to={"/carousel?album=" + parsed.album + "&image=" + item.id}>
+                  <Link to={parsed.album ? 
+                    "/carousel?album=" + parsed.album + "&image=" + item.id : 
+                    "/carousel?keyword=" + parsed.keyword + "&image=" + item.id
+                    }>
                     <img className="" key={item.id + '-img'} src={item.baseUrl} style={{ height: '200px' }} />
                   </Link> :
                   <video key={item.id + '-vid'} src={item.baseUrl + '=dv'} type={item.mimeType} controls style={{ height: '200px', padding: '2px', width: 'auto', backgroundColor: '#666' }} />}

@@ -131,7 +131,7 @@ app.get('/getAlbums', async (req, res) => {
     
     t0 = new Date();
     data = await libraryApiGetAlbums(gToken);
-    console.log('Loading ', data.sharedAlbums.length, 'albums from API... Done in', parseInt((new Date()-t0)), 'msec');
+    console.log('Loading', data.sharedAlbums.length, 'albums from API... Done in', parseInt((new Date()-t0)), 'msec');
 
     if (data.error) {
       // Error occured during the request. Albums could not be loaded.
