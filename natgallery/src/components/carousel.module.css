@@ -1,0 +1,22 @@
+.swiper-container {
+  width: 100px;
+  color: 'blue';
+}
+
+.swiper-wrapper {
+  padding-inline-start: 0;
+  color: 'blue';
+}
+
+.swiper-slide {
+  color: 'blue';
+}
+
+.swiper-slide-active {
+  color: 'blue';
+}
+
+.swiper-pagination {
+  bottom: 0;
+  padding-bottom: 100px;
+}

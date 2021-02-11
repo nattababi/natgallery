@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { getAlbum } from '../services/googleService';
 import queryString from 'query-string';
 import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
@@ -25,49 +24,49 @@ class Carousel extends Component {
 
     if (!parsed.album && !parsed.keyword) return (<div>No album or keyword defined</div>);
 
-    if (parsed.album && ((! this.props.albumStore.albums) || (this.props.albumStore.albums.images))){
+    if (parsed.album && ((!this.props.albumStore.albums) || (this.props.albumStore.albums.images))) {
       return (
         <LoadingOverlay
           active={true}
           spinner
           text=''
         >
-          <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
-          Loading albums...
+          <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
+            Loading albums...
           </div>
         </LoadingOverlay>
       );
     }
-    
+
     let images = null;
-    if (parsed.album){
+    if (parsed.album) {
       const album = this.props.albumStore.albums.find(x => x.id === parsed.album);
 
       if (!album) return (<div>Invalid album ID</div>);
 
       images = album.images;
     }
-    
-    if (parsed.keyword){
+
+    if (parsed.keyword) {
       images = this.props.albumStore.searchImages;
     }
-    else{
-    
+    else {
+
     }
 
-    if (!images){
+    if (!images) {
       return <LoadingOverlay
-          active={true}
-          spinner
-          text=''
-        >
-          <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
+        active={true}
+        spinner
+        text=''
+      >
+        <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
           Loading images...
           </div>
-        </LoadingOverlay>
+      </LoadingOverlay>
     }
-    
-    if (images && images.count === 0){
+
+    if (images && images.count === 0) {
       return (<div>No images found</div>);
     }
 
@@ -91,18 +90,19 @@ class Carousel extends Component {
         images[i].isActive = 0;
       }
     }
-    
+
+    //return (<div>Natus</div>);
+
     return (
-      <div style={{backgroundColor: 'black'}} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="5000" data-wrap="false" keyboard="true" ride="true">
-
-        
-
-        <div className="carousel-inner" style={{
+      <div style={{ backgroundColor: 'black' }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="5000" data-wrap="false" keyboard="true" ride="true">
+    
+       <div className="carousel-inner" style={{
           backgroundColor: 'red',
         }}
         >
-          {images.map((item, index,arrayobj) =>
-            <div className={item.isActive ? "carousel-item active" : "carousel-item"}
+          {images.map((item, index, arrayobj) =>
+            <div className={
+              (parsed.image && item.id === parsed.image) ? "carousel-item active" : "carousel-item" }
               style={{
                 backgroundColor: 'black',
                 border: 'solid 1px #000'
@@ -110,18 +110,18 @@ class Carousel extends Component {
             >
               {item.mimeType.startsWith('image/') ?
                 <div style={{ position: 'relative', textAlign: 'center', }}>
-                <img style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}
-                  key={item.id} className="d-block w-800"
-                  src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
-                  alt="Alt slide" />      
-              </div> :
+                  <img style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}
+                    key={item.id} className="d-block w-800"
+                    src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
+                    alt="Alt slide" />
+                </div> :
                 <iframe src="https://www.youtube.com/watch?v=NBJ0F1x9d48&list=PL9Dxzvu_wTzMMQ9ip057m5TMJvosVl-N9?autoplay=1" />
-              
-                
+
+
               }
-              <div style={{ margin: '4px 4px 4px 4px'}} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '100%', height: '70px', padding: '18px' }}>
+              <div style={{ margin: '4px 4px 4px 4px' }} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '100%', height: '70px', padding: '18px' }}>
               </div>
-              <div style={{ position: 'absolute', bottom: '35px', left: '50%', fontSize: '12px',color: '#F0F0F2' }}>{index + 1}&#x2f;{arrayobj.length}</div>
+              <div style={{ position: 'absolute', bottom: '35px', left: '50%', fontSize: '12px', color: '#F0F0F2' }}>{index + 1}&#x2f;{arrayobj.length}</div>
             </div>)}
         </div>
 

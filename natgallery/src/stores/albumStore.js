@@ -26,6 +26,6 @@ export default class AlbumStore {
 
   @action async cacheSearchImages(keyword) {
     this.searchImages = await getSearch(keyword);
-    console.log("search images length=", this.searchImages.length);
+    //console.log("Search images length=", this.searchImages.length);
   }
 }

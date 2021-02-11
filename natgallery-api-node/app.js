@@ -1,7 +1,6 @@
 const express = require('express');
 const config = require('./config.js');
 const bodyParser = require('body-parser');
-const session = require('express-session');
 const request = require('request-promise');
 const { refreshToken } = require('./utils/tokens');
 const { Config } = require('./models/config');
@@ -18,13 +17,50 @@ require("./startup/cors")(app);
 let gToken = "";
 let gUserId = "";
 
-// clear token every 50 minutes
-//var myVar = setInterval(clearToken, 50*60*1000);
 
-function clearToken (){
+getAlbumsAndImages();
+
+// refresh albums every 60 minutes
+var myVar = setInterval(getAlbumsAndImages, 60*60*1000);
+
+
+
+async function getAlbumsAndImages(){
+  
+  const t0 = new Date ();
+  
+  let data = await getAlbumsFromDatabase(true);
+
+  //console.log("Albums refreshed", data.sharedAlbums.length);
+  //todo: handle data.error
+  for (let i = 0; i<data.sharedAlbums.length; ++i){
+    console.log("Auto refreshing", i, data.sharedAlbums[i].title);
+    await getImagesFromDatabase(data.sharedAlbums[i].id, false);
+  }
+  
+  console.log('All albums updated in', parseInt(new Date() - t0) / 1000 / 60, 'minutes');
+
+}
+
+function clearToken() {
   console.log("Clear token", Date());
   gToken = "";
 }
+
+async function setGlobalToken(){
+  if (gToken === "") {
+    const data = await refreshToken();
+    gToken = data.token;
+    gUserId = data.userId;
+
+    // clear token in 30 minutes
+    setTimeout(clearToken, 30 * 60 * 1000);
+  }
+}
+
+
+// clear token every 50 minutes
+//var myVar = setInterval(clearToken, 50*60*1000);
 
 // Parse application/json request data.
 app.use(bodyParser.json());
@@ -33,18 +69,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(async (req, res, next) => {
-
-  if (gToken === "") {
-    const data = await refreshToken();
-    gToken = data.token;
-    gUserId = data.userId;
-
-    // clear token in 50 minutes
-    setTimeout(clearToken, 50*60*1000);
-  }
-
+  await setGlobalToken();
   next();
 });
+
 
 
 // Axios.interceptors.response.use(
@@ -95,59 +123,113 @@ app.get('/', (req, res) => {
   //res.send(passport);
   if (!req.user || !req.isAuthenticated()) {
     // Not logged in yet.
-    res.send('api for google albums');
+    res.send('API for google albums');
   } else {
     //res.send('pages/frame');
   }
 });
 
 app.get('/getAlbums', async (req, res) => {
-  console.log(`---------------------------`);
-  //console.log('Loading albums...');
-  const userId = gUserId;//req.user.profile.id;
 
-  let data = {};
-  // Attempt to load the albums from cache if available.
+  let data = await getAlbumsFromDatabase();
+
+  if (data.error) {
+      // Error occured during the request. Albums could not be loaded.
+      returnError(res, data);
+    } else {
+      res.status(200).send(data);
+    }
+  });
+
+async function getAlbumsFromDatabase(debugMode = true) {
+
+  //if (debugMode) console.log(`---------------------------`);
+
+  // Attempt to load the albums from database if available.
   // Temporarily caching the albums makes the app more responsive.
 
+  let data = {};
+
   let t0 = new Date();
-  
+
   // search in database
   let albums = await Album.find({});
 
-  // store albums 35 minutes in the database
-  if (albums.length > 0 && ( parseInt((new Date()-albums[0].saveDate)/1000/60)) < 35) {
-    
+  // store albums 30 minutes in the database
+  if (albums.length > 0 && (parseInt((new Date() - albums[0].saveDate) / 1000 / 60)) < 30) {
+
     data.sharedAlbums = albums;
-    
-    res.status(200).send(data);
-    
-    console.log('Loading', albums.length, 'albums from database... Done in', parseInt((new Date()-t0)), 'msec');
-    console.log('Saved time=', parseInt(new Date() - albums[0].saveDate)/1000/60, 'minutes ago');
-    
+
+    if (debugMode) console.log('Loading', albums.length, 'albums from database... Done in', parseInt((new Date() - t0)), 'msec');
+    if (debugMode) console.log('Saved time=', parseInt(new Date() - albums[0].saveDate) / 1000 / 60, 'minutes ago');
+
   }
-  else{
-    dbRemoveAlbums(userId);
-    
+  else {
+    dbRemoveAlbums(gUserId);
+
     t0 = new Date();
+
+    await setGlobalToken();
+
     data = await libraryApiGetAlbums(gToken);
-    console.log('Loading', data.sharedAlbums.length, 'albums from API... Done in', parseInt((new Date()-t0)), 'msec');
+    
+    if (debugMode) console.log('Loading', data.sharedAlbums.length, 'albums from API... Done in', parseInt((new Date() - t0)), 'msec');
 
     if (data.error) {
-      // Error occured during the request. Albums could not be loaded.
-      returnError(res, data);
-      // Clear the cached albums.
+      //return error
     } else {
       // Albums were successfully loaded from the API. Cache them
-      await dbSaveAlbums(data.sharedAlbums, userId);
-      res.status(200).send(data);
+      await dbSaveAlbums(data.sharedAlbums, gUserId);
     }
   }
-  console.log(`---------------------------`);
-});
 
+  //if (debugMode) console.log(`---------------------------`);
 
-async function libraryApiSearch(authToken, parameters) {
+  return data;
+}
+
+async function getImagesFromDatabase(albumId, debugMode = true) {
+
+  const authToken = gToken;
+
+  if (debugMode) console.log(`---------------------------`);
+  if (debugMode) console.log(`Importing album: ${albumId}`);
+
+  // To list all media in an album, construct a search request
+  // where the only parameter is the album ID.
+  // Note that no other filters can be set, so this search will
+  // also return videos that are otherwise filtered out in libraryApiSearch(..).
+  const parameters = { albumId };
+  let data = {};
+
+  let t0 = new Date();
+  // search in database
+  let images = await Image.find({ albumId: albumId });
+
+  // store images 30 minutes in the database
+  if (images && images.length > 0 && (parseInt((new Date() - images[0].saveDate) / 1000 / 60)) < 30) {
+    if (debugMode) console.log('Loading', images.length, 'images from database... Done in', parseInt((new Date() - t0)), 'msec');
+    if (debugMode) console.log('Saved time=', parseInt(new Date() - images[0].saveDate) / 1000 / 60, 'minutes ago');
+    data.photos = images;
+  }
+  else {
+    //console.log("no images found or too old");
+    await dbRemoveImages(albumId, debugMode);
+
+    await setGlobalToken();
+
+    // Submit the search request to the API and wait for the result.
+    data = await libraryApiSearch(authToken, parameters, debugMode);
+
+    await dbSaveImages(data.photos, albumId, debugMode);
+  }
+
+  if (debugMode) console.log(`---------------------------`);
+  
+  return data;
+}
+
+async function libraryApiSearch(authToken, parameters, debugMode = true) {
   let photos = [];
   let nextPageToken = null;
   let error = null;
@@ -169,7 +251,7 @@ async function libraryApiSearch(authToken, parameters) {
             'Authorization': `Bearer ${authToken}`
           }
         });
-      
+
       result = result.data;
 
       //console.log(`Response: ${result}`);
@@ -181,7 +263,7 @@ async function libraryApiSearch(authToken, parameters) {
         // Also remove all elements that are not images by checking its mime type.
         // Media type filters can't be applied if an album is loaded, so an extra
         // filter step is required here to ensure that only images are returned.
-        
+
         //items = result.mediaItems.filter(x => x);//result && result.mediaItems ?
         //const items2 = result.mediaItems.filter(x => !x);
         //console.log("items filtered", items2.length);
@@ -213,23 +295,23 @@ async function libraryApiSearch(authToken, parameters) {
     // If the error is a StatusCodeError, it contains an error.error object that
     // should be returned. It has a name, statuscode and message in the correct
     // format. Otherwise extract the properties.
-    
+
     // TODO: check when err.response is nothing 
     error = { name: err.name, code: err.response.status, message: err.message };
     console.log(error);
   }
 
-  console.log('Google API respond in', parseInt((new Date()-t0)), 'msec');
+  if (debugMode) console.log('Google API respond in', parseInt((new Date() - t0)), 'msec');
 
   //console.log('Search complete.');
   return { photos, parameters, error };
 }
 
 async function libraryApiGetAlbums(authToken) {
+
   let sharedAlbums = [];
   let nextPageToken = null;
   let error = null;
-
 
   let config1 = {
     headers: {
@@ -279,8 +361,6 @@ async function libraryApiGetAlbums(authToken) {
 
   console.log('Albums loaded.');
 
-  //sharedAlbums = sharedAlbums.filter(x => )
-  //const items = sharedAlbums.filter(x => x);
   return { sharedAlbums, error };
 }
 
@@ -295,40 +375,11 @@ function returnError(res, data) {
 
 app.post('/loadFromAlbum/:id', async (req, res) => {
   const albumId = req.params.id;
-  const userId = gUserId;
-  const authToken = gToken;
-
-  console.log(`---------------------------`);
-  console.log(`Importing album: ${albumId}`);
-
-  // To list all media in an album, construct a search request
-  // where the only parameter is the album ID.
-  // Note that no other filters can be set, so this search will
-  // also return videos that are otherwise filtered out in libraryApiSearch(..).
   const parameters = { albumId };
-  let data = {};
 
-  let t0 = new Date();
-  // search in database
-  let images = await Image.find({albumId: albumId});
+  const data = await getImagesFromDatabase(albumId);
 
-  // store images 35 minutes in the database
-  if (images.length > 0 && ( parseInt((new Date()-images[0].saveDate)/1000/60)) < 35) {
-    console.log('Loading', images.length, 'images from database... Done in', parseInt((new Date()-t0)), 'msec');
-    console.log('Saved time=', parseInt(new Date() - images[0].saveDate)/1000/60, 'minutes ago');
-    data.photos = images;
-  }
-  else{
-    //console.log("no images found or too old");
-    await dbRemoveImages(albumId);
-    // Submit the search request to the API and wait for the result.
-    data = await libraryApiSearch(authToken, parameters);
-
-    await dbSaveImages(data.photos, albumId);
-  }
-
-  console.log(`---------------------------`);
-  returnPhotos(res, userId, data, parameters)
+  returnPhotos(res, data, parameters)
 });
 
 app.post('/loadFromSearch', async (req, res) => {
@@ -378,29 +429,13 @@ app.post('/loadFromSearch', async (req, res) => {
 
   // Return and cache the result and parameters.
   const userId = gUserId;
-  returnPhotos(res, userId, data, parameters);
+  returnPhotos(res, data, parameters);
 });
 
-function returnPhotos(res, userId, data, searchParameter) {
+function returnPhotos(res, data, searchParameter) {
   if (data.error) {
     returnError(res, data);
   } else {
-    // Remove the pageToken and pageSize from the search parameters.
-    // They will be set again when the request is submitted but don't need to be
-    // stored.
-
-    //delete searchParameter.pageToken;
-    //delete searchParameter.pageSize;
-
-    // Cache the media items that were loaded temporarily.
-
-    //mediaItemCache.setItemSync(userId, data.photos);
-
-    // Store the parameters that were used to load these images. They are used
-    // to resubmit the query after the cache expires.
-
-    //storage.setItemSync(userId, {parameters: searchParameter});
-
     // Return the photos and parameters back int the response.
     res.status(200).send({ photos: data.photos, parameters: searchParameter });
   }

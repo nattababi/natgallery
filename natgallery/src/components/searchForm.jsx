@@ -1,8 +1,5 @@
 import React from 'react';
 import Form from './form';
-//import Joi from 'joi-browser';
-//import auth from '../services/authService';
-//import * as userService from '../services/userService';
 
 class RegisterForm extends Form {
   state = {
@@ -24,7 +21,6 @@ class RegisterForm extends Form {
     }
 
     console.log(this.selected.join(","));
-    //console.log(name, checked);
   }
 
   doSubmit = async () => {
@@ -33,19 +29,6 @@ class RegisterForm extends Form {
     console.log(this.selected.join(","));
 
     window.location = "/albumDetails?keyword=" + this.selected.join(",");
-    // try {
-    //   const response = await userService.register(this.state.data);
-    //   auth.loginWithJwt(response.headers['x-auth-token']);
-    //   console.log(response);
-    //   window.location = '/';
-    // }
-    // catch (ex) {
-    //   if (ex.response && ex.response.status === 400) {
-    //     const errors = { ...this.state.errors };
-    //     errors.username = ex.response.data;
-    //     this.setState({ errors });
-    //   }
-    // }
   }
 
   render() {

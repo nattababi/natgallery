@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const { mediaMetadataSchema } = require('./mediaMetadata');
 
 const Image = mongoose.model('Image', new mongoose.Schema({
-  _id: {
-    type: String,
-    required: true,
-    minlength: 5
-  },
+  // _id: {
+  //   type: String,
+  //   required: true,
+  //   minlength: 5
+  // },
   albumId: {
     type: String,
     required: true,
