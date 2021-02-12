@@ -21,7 +21,7 @@ class Album extends Component {
 
         <div style={{ margin: '4px 4px 4px 4px' }} style={{ position: 'absolute', bottom: '0', background: 'white', width: '100%', height: '100%', padding: '0px' }}>
 
-          <Link key={this.props.albumId} to={'/albumdetails?album=' + this.props.albumId + '&title=' + this.props.albumTitle} >
+          <Link key={this.props.albumId} to={'/albumdetails?title=' + this.props.albumTitle + '&album=' + this.props.albumId} >
             
             <div style={{  
               backgroundImage: "url(" + this.props.coverUrl + ")",

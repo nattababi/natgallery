@@ -22,6 +22,14 @@ const Album = mongoose.model('Album', new mongoose.Schema({
     type: Number,
     required: true,
   },
+  coverPhotoMediaItemId: {
+    type: String,
+    required: true,
+  },
+  creationTime: {
+    type: Date,
+    required: true
+  },
   saveDate: {
     type: Date,
     required: true

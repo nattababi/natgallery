@@ -11,7 +11,13 @@ export default class AlbumStore {
 
   @action async cacheAlbums() {
     if (!this.albums) {
-      this.albums = await getAlbums();
+      
+      let albums = await getAlbums();
+      
+      albums.sort((a, b) => new Date(b.creationTime) - new Date(a.creationTime));
+
+      this.albums = albums;
+
     }
   }
 

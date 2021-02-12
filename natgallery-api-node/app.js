@@ -6,8 +6,9 @@ const { refreshToken } = require('./utils/tokens');
 const { Config } = require('./models/config');
 const { Album } = require('./models/album');
 const { Image } = require('./models/image');
+const { Cover } = require('./models/cover');
 const axios = require('axios');
-const { dbSaveAlbums, dbRemoveAlbums, dbSaveImages, dbRemoveImages } = require('./utils/database');
+const { dbSaveAlbums, dbRemoveAlbums, dbSaveImages, dbRemoveImages, dbSaveCover } = require('./utils/database');
 
 const app = express();
 
@@ -21,23 +22,23 @@ let gUserId = "";
 getAlbumsAndImages();
 
 // refresh albums every 60 minutes
-var myVar = setInterval(getAlbumsAndImages, 60*60*1000);
+var myVar = setInterval(getAlbumsAndImages, 60 * 60 * 1000);
 
 
 
-async function getAlbumsAndImages(){
-  
-  const t0 = new Date ();
-  
+async function getAlbumsAndImages() {
+
+  const t0 = new Date();
+
   let data = await getAlbumsFromDatabase(true);
 
   //console.log("Albums refreshed", data.sharedAlbums.length);
   //todo: handle data.error
-  for (let i = 0; i<data.sharedAlbums.length; ++i){
+  for (let i = 0; i < data.sharedAlbums.length; ++i) {
     console.log("Auto refreshing", i, data.sharedAlbums[i].title);
     await getImagesFromDatabase(data.sharedAlbums[i].id, false);
   }
-  
+
   console.log('All albums updated in', parseInt(new Date() - t0) / 1000 / 60, 'minutes');
 
 }
@@ -47,7 +48,7 @@ function clearToken() {
   gToken = "";
 }
 
-async function setGlobalToken(){
+async function setGlobalToken() {
   if (gToken === "") {
     const data = await refreshToken();
     gToken = data.token;
@@ -134,12 +135,12 @@ app.get('/getAlbums', async (req, res) => {
   let data = await getAlbumsFromDatabase();
 
   if (data.error) {
-      // Error occured during the request. Albums could not be loaded.
-      returnError(res, data);
-    } else {
-      res.status(200).send(data);
-    }
-  });
+    // Error occured during the request. Albums could not be loaded.
+    returnError(res, data);
+  } else {
+    res.status(200).send(data);
+  }
+});
 
 async function getAlbumsFromDatabase(debugMode = true) {
 
@@ -172,7 +173,7 @@ async function getAlbumsFromDatabase(debugMode = true) {
     await setGlobalToken();
 
     data = await libraryApiGetAlbums(gToken);
-    
+
     if (debugMode) console.log('Loading', data.sharedAlbums.length, 'albums from API... Done in', parseInt((new Date() - t0)), 'msec');
 
     if (data.error) {
@@ -225,7 +226,7 @@ async function getImagesFromDatabase(albumId, debugMode = true) {
   }
 
   if (debugMode) console.log(`---------------------------`);
-  
+
   return data;
 }
 
@@ -360,6 +361,39 @@ async function libraryApiGetAlbums(authToken) {
   }
 
   console.log('Albums loaded.');
+
+  //populate albums with date created
+
+  for (let i = 0; i < sharedAlbums.length; ++i) {
+
+    let coverId = sharedAlbums[i].coverPhotoMediaItemId;
+    let coverTime = null;
+    
+    //try to find in database creation time
+    let cover = await Cover.find({ coverPhotoMediaItemId: coverId });
+
+    if (cover.length > 0) {
+      console.log('get cover from db', i, '; items found', cover.length);
+      coverTime = cover[0].creationTime;
+    }
+    else {
+      //get it from api
+      const url = config.apiEndpoint + '/v1/mediaItems/' + coverId;
+      console.log('get cover from api', i, url);
+      let result = await axios.get(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      coverTime = result.data.mediaMetadata.creationTime;
+      await dbSaveCover(coverId, coverTime);
+    }
+
+    sharedAlbums[i].creationTime = coverTime;
+  }
+
+  console.log('Creationtimes loaded.');
 
   return { sharedAlbums, error };
 }

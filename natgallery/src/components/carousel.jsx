@@ -72,27 +72,6 @@ class Carousel extends Component {
 
     images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
 
-    let imageId = "";
-
-    if (parsed.image) {
-      imageId = parsed.image;
-    }
-    else {
-      imageId = images[0].id;
-    }
-
-    // set active attribure for carousel
-    for (let i = 0; i < images.length; i++) {
-      if (images[i].id === imageId) {
-        images[i].isActive = 1;
-      }
-      else {
-        images[i].isActive = 0;
-      }
-    }
-
-    //return (<div>Natus</div>);
-
     return (
       <div style={{ backgroundColor: 'black' }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="5000" data-wrap="false" keyboard="true" ride="true">
     
@@ -101,7 +80,7 @@ class Carousel extends Component {
         }}
         >
           {images.map((item, index, arrayobj) =>
-            <div className={
+            <div key={item.id + '-wrap'} className={
               (parsed.image && item.id === parsed.image) ? "carousel-item active" : "carousel-item" }
               style={{
                 backgroundColor: 'black',

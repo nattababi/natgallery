@@ -1,12 +1,17 @@
 const { Album } = require("../models/album");
 const { Image } = require("../models/image");
+const { Cover } = require("../models/cover");
 
 async function dbSaveAlbums(data, userId) {
   
   let t0 = new Date();
   
+  console.log(data[0]);
+
   for (let i = 0; i< data.length; i++){
     
+    console.log(data[i].coverPhotoMediaItemId);
+
     let duplicate = await Album.find({_id: data[i].id});
 
     if (duplicate.length > 0){
@@ -31,6 +36,8 @@ async function dbSaveAlbums(data, userId) {
      title: (typeof(data[i].title) === 'undefined')? "noname" + i: data[i].title,
      coverPhotoBaseUrl : data[i].coverPhotoBaseUrl,
      mediaItemsCount: data[i].mediaItemsCount,
+     coverPhotoMediaItemId: data[i].coverPhotoMediaItemId,
+     creationTime: data[i].creationTime,
      saveDate: Date()
    });
 
@@ -80,7 +87,19 @@ async function dbRemoveImages(albumId, debugMode = true) {
   if (debugMode) console.log('Removing expired images from database... Done in', parseInt((new Date()-t0)), 'msec');
 }
 
+async function dbSaveCover(coverId, creationTime) {
+  
+  const cover = new Cover({
+    coverPhotoMediaItemId: coverId,
+    creationTime: creationTime
+  });
+  
+  await cover.save();
+  
+}
+
 exports.dbSaveAlbums = dbSaveAlbums;
 exports.dbRemoveAlbums = dbRemoveAlbums;
 exports.dbSaveImages = dbSaveImages;
 exports.dbRemoveImages = dbRemoveImages;
+exports.dbSaveCover = dbSaveCover;
