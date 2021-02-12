@@ -115,8 +115,8 @@ class AlbumDetails extends Component {
               <div key={item.id + '-div'} style={{ position: 'relative', height: '200px', margin: '4px', overflow: 'hidden', display: 'inline-block' }}>
                 {item.mimeType.startsWith('image/') ?
                   <Link to={parsed.album ? 
-                    "/carousel?album=" + parsed.album + "&image=" + item.id : 
-                    "/carousel?keyword=" + parsed.keyword + "&image=" + item.id
+                    "/carousel?album=" + parsed.album + "&image=" + item.imageId : 
+                    "/carousel?keyword=" + parsed.keyword + "&image=" + item.imageId
                     }>
                     <img className="" key={item.id + '-img'} src={item.baseUrl} style={{ height: '200px' }} />
                   </Link> :

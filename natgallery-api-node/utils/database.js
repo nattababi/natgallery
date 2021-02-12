@@ -60,6 +60,7 @@ async function dbSaveImages(data, albumId, debugMode = true){
 
   for (let i = 0; i< data.length; i++){
     const image = new Image({
+      imageId: data[i].id,
       albumId: albumId,
       baseUrl: data[i].baseUrl,
       mimeType: data[i].mimeType,

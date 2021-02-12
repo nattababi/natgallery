@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { getAlbum } from '../services/googleService';
 import queryString from 'query-string';
 import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';

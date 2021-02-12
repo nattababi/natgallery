@@ -70,7 +70,22 @@ class Carousel extends Component {
       return (<div>No images found</div>);
     }
 
+    //todo: why this happens??
+    let isfound = -1;
+    for(let i = 0; i<images.length;++i){
+      if (images[i].imageId === parsed.image){
+        isfound = i;
+      }
+    }
+    //if (isfound === -1) parsed.image = images[0].id;
+    console.log("isfound index", isfound);
+    //http://localhost:3000/carousel?album=AAcw7hacKXsgViYFHv-9bhwKxsfJZlE7Sqj_h_C32uXQdUiVM4nStwVo5h1nrcEKKAE9FS1YbK1F&image=AAcw7haQDWnevilgD1oZY94hjVv7x4WzuStooezqCSdMQzSBm3bXKQwLrmYq10P8tlQMp6sdqXfWEfyFdQFmDZsJ_BDwFdHGaA
+    
     images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
+
+    // for (let i = 0; i< images.length;i++){
+    //   if (!images[i].mimeType.startsWith('image/')) console.log(images[i].baseUrl);
+    // }
 
     return (
       <div style={{ backgroundColor: 'black' }} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="5000" data-wrap="false" keyboard="true" ride="true">
@@ -81,7 +96,7 @@ class Carousel extends Component {
         >
           {images.map((item, index, arrayobj) =>
             <div key={item.id + '-wrap'} className={
-              (parsed.image && item.id === parsed.image) ? "carousel-item active" : "carousel-item" }
+              (parsed.image && item.imageId === parsed.image) ? "carousel-item active" : "carousel-item" }
               style={{
                 backgroundColor: 'black',
                 border: 'solid 1px #000'
@@ -93,14 +108,20 @@ class Carousel extends Component {
                     key={item.id} className="d-block w-800"
                     src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
                     alt="Alt slide" />
-                </div> :
-                <iframe src="https://www.youtube.com/watch?v=NBJ0F1x9d48&list=PL9Dxzvu_wTzMMQ9ip057m5TMJvosVl-N9?autoplay=1" />
+                </div> : 
+                <div style={{ position: 'relative', textAlign: 'center', }}>
+                  <video style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}
+                    key={item.id} className="d-block w-800"
+                    src={item.baseUrl+"=dv"} type={item.mimeType} controls autoPlay loop
+                    alt="Alt slide" />
+                </div>
+                  
 
 
               }
               <div style={{ margin: '4px 4px 4px 4px' }} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '100%', height: '70px', padding: '18px' }}>
               </div>
-              <div style={{ position: 'absolute', bottom: '35px', left: '50%', fontSize: '12px', color: '#F0F0F2' }}>{index + 1}&#x2f;{arrayobj.length}</div>
+              <div style={{ position: 'absolute', bottom: '35px', left: '50%', fontSize: '12px', color: '#F0F0F2' }}>{index + 1} &#x2f; {arrayobj.length}</div>
             </div>)}
         </div>
 

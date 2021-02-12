@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-//import { getAlbum } from '../services/googleService';
 import { Link } from 'react-router-dom';
 
 class Album extends Component {
@@ -10,8 +9,6 @@ class Album extends Component {
 
   handleClick = async () => {
     console.log("album clicked");
-    //let photos = await getAlbum(this.props.albumId);
-    //this.setState({ photos });
   }
 
   render() {
