@@ -17,6 +17,7 @@ class Carousel extends Component {
       await this.props.albumStore.cacheSearchImages(parsed.keyword);
     };
 
+    window.addEventListener("keyup", function(e){ if(e.key === 27) console.log('esc'); }, false);
   }
 
   render() {

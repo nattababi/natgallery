@@ -6,12 +6,8 @@ async function dbSaveAlbums(data, userId) {
   
   let t0 = new Date();
   
-  console.log(data[0]);
-
   for (let i = 0; i< data.length; i++){
     
-    console.log(data[i].coverPhotoMediaItemId);
-
     let duplicate = await Album.find({_id: data[i].id});
 
     if (duplicate.length > 0){
