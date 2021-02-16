@@ -15,8 +15,8 @@ const app = express();
 require("./startup/db")();
 require("./startup/cors")(app);
 
-let gToken = "ya29.a0AfH6SMD4lJHy6sMlfxUUK3ylJp4IezNCPywmv9lcflf0X86CQZVDes63t7Y3nWL2Ya1le8q9gmLmwP_293ljWXABVUsv-FDvbOpEA-dXmzJQR5tfbc12eC8qzQZta6B2l_W88938Gx2BNacHfQXIAdY5jW74vpcqqYqoduAKj5o";
-//let gToken = "";
+//let gToken = "ya29.a0AfH6SMD4lJHy6sMlfxUUK3ylJp4IezNCPywmv9lcflf0X86CQZVDes63t7Y3nWL2Ya1le8q9gmLmwP_293ljWXABVUsv-FDvbOpEA-dXmzJQR5tfbc12eC8qzQZta6B2l_W88938Gx2BNacHfQXIAdY5jW74vpcqqYqoduAKj5o";
+let gToken = "";
 let gTokenLife = null;
 let gUserId = "";
 
@@ -389,7 +389,7 @@ async function libraryApiGetAlbums(authToken) {
     let cover = await Cover.find({ coverPhotoMediaItemId: coverId });
 
     if (cover.length > 0) {
-      //console.log('get cover from db', i, '; items found', cover.length);
+      //console.log('Get cover from db', i, '; items found', cover.length);
       coverTime = cover[0].creationTime;
     }
     else {

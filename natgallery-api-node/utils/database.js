@@ -3,78 +3,81 @@ const { Image } = require("../models/image");
 const { Cover } = require("../models/cover");
 
 async function dbSaveAlbums(data, userId) {
-  
+
   let t0 = new Date();
-  
-  for (let i = 0; i< data.length; i++){
-    
-    const album = new Album({ 
+  let albums = [];
+  for (let i = 0; i < data.length; i++) {
+
+    const album = {
       _id: data[i].id,
       userId: userId,
-      title: (typeof(data[i].title) === 'undefined')? "noname" + i: data[i].title,
-      coverPhotoBaseUrl : data[i].coverPhotoBaseUrl,
+      title: (typeof (data[i].title) === 'undefined') ? "noname" + i : data[i].title,
+      coverPhotoBaseUrl: data[i].coverPhotoBaseUrl,
       mediaItemsCount: data[i].mediaItemsCount,
       coverPhotoMediaItemId: data[i].coverPhotoMediaItemId,
       creationTime: data[i].creationTime,
       saveDate: Date()
-   });
+    };
 
-    await album.save();
+    albums.push(album);
+
   }
   
-  console.log('Saving', data.length, 'albums to database... Done in', parseInt((new Date()-t0)), 'msec');
+  await Album.insertMany(albums);
+
+  console.log('Saving', data.length, 'albums to database... Done in', parseInt((new Date() - t0)), 'msec');
 }
 
 async function dbRemoveAlbums() {
   let t0 = new Date();
-  
+
   await Album.deleteMany({});
-  console.log('Removing expired albums from database... Done in', parseInt((new Date()-t0)), 'msec');
-  
+  console.log('Removing expired albums from database... Done in', parseInt((new Date() - t0)), 'msec');
+
 }
 
-async function dbSaveImages(data, albumId, debugMode = true){
+async function dbSaveImages(data, albumId, debugMode = true) {
   let t0 = new Date();
-
-  for (let i = 0; i< data.length; i++){
-    const image = new Image({
+  let images = [];
+  for (let i = 0; i < data.length; i++) {
+    const image = {
       imageId: data[i].id,
       albumId: albumId,
       baseUrl: data[i].baseUrl,
       mimeType: data[i].mimeType,
       saveDate: Date(),
       mediaMetadata: {
-        height : data[i].mediaMetadata.height,
+        height: data[i].mediaMetadata.height,
         width: data[i].mediaMetadata.width,
         creationTime: data[i].mediaMetadata.creationTime
       },
-    });
-    
-    await image.save();
-    
+    };
+    images.push(image);
+
+
   }
-  
-  //console.log("end saving...");
-  
-  if (debugMode) console.log('Saving', data.length, 'images to database... Done in', parseInt((new Date()-t0)), 'msec');
+
+  await Image.insertMany(images);
+
+  if (debugMode) console.log('Saving', data.length, 'images to database... Done in', parseInt((new Date() - t0)), 'msec');
 }
 
 async function dbRemoveImages(albumId, debugMode = true) {
   let t0 = new Date();
-  
-  await Image.deleteMany({albumId: albumId});
-  if (debugMode) console.log('Removing expired images from database... Done in', parseInt((new Date()-t0)), 'msec');
+
+  await Image.deleteMany({ albumId: albumId });
+  if (debugMode) console.log('Removing expired images from database... Done in', parseInt((new Date() - t0)), 'msec');
 }
 
 async function dbSaveCover(coverId, creationTime) {
-  
+
   const cover = new Cover({
     coverPhotoMediaItemId: coverId,
     creationTime: creationTime
   });
-  
+
   await cover.save();
-  
+
 }
 
 exports.dbSaveAlbums = dbSaveAlbums;
