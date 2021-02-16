@@ -5,7 +5,7 @@ import AlbumStore from './albumStore';
 const albumStore = new AlbumStore();
 
 autorun(() => {
-  albumStore.cacheAlbums();
+  //albumStore.cacheAlbums();
 })
 
 export { albumStore };

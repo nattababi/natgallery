@@ -9,7 +9,7 @@ async function del() {
 
   await Album.deleteMany({});
   await Image.deleteMany({});
-  await Cover.deleteMany({});
+  //await Cover.deleteMany({});
   
   mongoose.disconnect();
 

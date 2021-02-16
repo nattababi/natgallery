@@ -15,7 +15,8 @@ const app = express();
 require("./startup/db")();
 require("./startup/cors")(app);
 
-let gToken = "";
+let gToken = "ya29.a0AfH6SMD4lJHy6sMlfxUUK3ylJp4IezNCPywmv9lcflf0X86CQZVDes63t7Y3nWL2Ya1le8q9gmLmwP_293ljWXABVUsv-FDvbOpEA-dXmzJQR5tfbc12eC8qzQZta6B2l_W88938Gx2BNacHfQXIAdY5jW74vpcqqYqoduAKj5o";
+//let gToken = "";
 let gTokenLife = null;
 let gUserId = "";
 
@@ -39,7 +40,7 @@ async function getAlbumsAndImages() {
     await getImagesFromDatabase(data.sharedAlbums[i].id, false);
   }
 
-  console.log('All albums (',data.sharedAlbums.length,') in database are auto-refreshed in', parseInt(new Date() - t0) / 1000 / 60, 'minutes');
+  console.log('All albums (', data.sharedAlbums.length, ') in database are auto-refreshed in', parseInt(new Date() - t0) / 1000 / 60, 'minutes');
 
 }
 
@@ -49,6 +50,8 @@ function clearToken() {
 }
 
 async function setGlobalToken() {
+  const tokenLifeMin = (new Date() - gTokenLife) / 1000 / 60;
+  //if (tokenLifeMin > 120) {
   if (gToken === "") {
     const data = await refreshToken();
     gToken = data.token;
@@ -56,10 +59,10 @@ async function setGlobalToken() {
     gTokenLife = new Date();
 
     // clear token in 30 minutes
-    setTimeout(clearToken, 30 * 60 * 1000);
+    //setTimeout(clearToken, 30 * 60 * 1000);
   }
-  else{
-    //console.log('Token life=', parseInt((new Date() - gTokenLife)/1000/60), 'min');
+  else {
+    console.log('Token life=', parseInt((new Date() - gTokenLife)) / 1000 / 60, 'min');
   }
 }
 
@@ -77,8 +80,6 @@ app.use(async (req, res, next) => {
   await setGlobalToken();
   next();
 });
-
-
 
 // Axios.interceptors.response.use(
 //   response => response,
@@ -106,23 +107,31 @@ app.use(async (req, res, next) => {
 //     }
 //   }
 // )
-// axios.interceptors.response.use(null, (error) => {
-//   //console.log(error);
 
-//   if (error.config && error.response && error.response.status === 401 &&
-//       error.config.url !== "https://accounts.google.com/o/oauth2/token") {
-//     console.log("axios retry");
-//     return refreshToken().then((data) => {
-//       console.log("callback from refreshtoken", data.token);
-//       error.config.headers['Authorization'] = 'Bearer ' + data.token;
-//       gToken = data.token;
-//       gUserId = data.userId;
-//       return axios.request(error.config);
-//     });
-//   }
+axios.interceptors.response.use(null, async (error) => {
+  //console.log(error);
 
-//   return Promise.reject(error);
-// });
+  const originalRequest = error.config;
+
+  if (error.config && error.response && error.response.status === 401 &&
+    !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      console.log('I can retry after 401');
+
+      gToken = "";
+      const data = await refreshToken();
+      //console.log("333");
+      error.config.headers['Authorization'] = 'Bearer ' + data.token;
+      gToken = data.token;
+      gUserId = data.userId;
+      gTokenLife = new Date();
+      
+      return axios.request(error.config);
+  }
+
+  return Promise.reject(error);
+});
 
 app.get('/', (req, res) => {
   //res.send(passport);
@@ -160,8 +169,8 @@ async function getAlbumsFromDatabase(debugMode = true) {
   // search in database
   let albums = await Album.find({});
 
-  // store albums 30 minutes in the database
-  if (albums.length > 0 && (parseInt((new Date() - albums[0].saveDate) / 1000 / 60)) < 30) {
+  // store albums 25 minutes in the database
+  if (albums.length > 0 && (parseInt((new Date() - albums[0].saveDate) / 1000 / 60)) < 25) {
 
     data.sharedAlbums = albums;
 
@@ -170,14 +179,13 @@ async function getAlbumsFromDatabase(debugMode = true) {
 
   }
   else {
-    dbRemoveAlbums(gUserId);
+    await dbRemoveAlbums();
 
     t0 = new Date();
 
     await setGlobalToken();
 
     data = await libraryApiGetAlbums(gToken);
-
     if (debugMode) console.log('Loading', data.sharedAlbums.length, 'albums from API... Done in', parseInt((new Date() - t0)), 'msec');
 
     if (data.error) {
@@ -211,8 +219,8 @@ async function getImagesFromDatabase(albumId, debugMode = true) {
   // search in database
   let images = await Image.find({ albumId: albumId });
 
-  // store images 30 minutes in the database
-  if (images && images.length > 0 && (parseInt((new Date() - images[0].saveDate) / 1000 / 60)) < 30) {
+  // store images 25 minutes in the database
+  if (images && images.length > 0 && (parseInt((new Date() - images[0].saveDate) / 1000 / 60)) < 25) {
     if (debugMode) console.log('Loading', images.length, 'images from database... Done in', parseInt((new Date() - t0)), 'msec');
     if (debugMode) console.log('Saved time=', parseInt(new Date() - images[0].saveDate) / 1000 / 60, 'minutes ago');
     data.photos = images;
@@ -226,7 +234,7 @@ async function getImagesFromDatabase(albumId, debugMode = true) {
     // Submit the search request to the API and wait for the result.
     data = await libraryApiSearch(authToken, parameters, debugMode);
 
-    for (let i = 0; i<data.photos.length; i++){
+    for (let i = 0; i < data.photos.length; i++) {
       data.photos[i].imageId = data.photos[i].id;
     }
 
@@ -350,7 +358,7 @@ async function libraryApiGetAlbums(authToken) {
         const items = result.sharedAlbums;//.filter(x => !!x);
         sharedAlbums = [...sharedAlbums, ...items];
       }
-
+      
       config1.params.pageToken = result.nextPageToken;
 
       // Loop until all albums have been listed and no new nextPageToken is
@@ -363,22 +371,23 @@ async function libraryApiGetAlbums(authToken) {
     // should be returned. It has a name, statuscode and message in the correct
     // format. Otherwise extract the properties.
 
-    error = { name: err.name, code: err.response.status, message: err.message };
+    console.log(err.name, err.response,err.message);
+    error = { name: err.name, code: err.response ? err.response.status : null, message: err.message };
     console.log(error);
 
   }
 
-  
+
   //populate albums with date created
-  
+
   for (let i = 0; i < sharedAlbums.length; ++i) {
-    
+
     let coverId = sharedAlbums[i].coverPhotoMediaItemId;
     let coverTime = null;
-    
+
     //try to find in database creation time
     let cover = await Cover.find({ coverPhotoMediaItemId: coverId });
-    
+
     if (cover.length > 0) {
       //console.log('get cover from db', i, '; items found', cover.length);
       coverTime = cover[0].creationTime;
@@ -386,7 +395,7 @@ async function libraryApiGetAlbums(authToken) {
     else {
       //get it from api
       const url = config.apiEndpoint + '/v1/mediaItems/' + coverId;
-      //console.log('get cover from api', i, url);
+      console.log('Get cover from api', i, url);
       let result = await axios.get(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -396,12 +405,12 @@ async function libraryApiGetAlbums(authToken) {
       coverTime = result.data.mediaMetadata.creationTime;
       await dbSaveCover(coverId, coverTime);
     }
-    
+
     sharedAlbums[i].creationTime = coverTime;
   }
-  
+
   console.log('Albums loaded.');
-  
+
   return { sharedAlbums, error };
 }
 
@@ -471,10 +480,10 @@ app.post('/loadFromSearch', async (req, res) => {
   // Return and cache the result and parameters.
   const userId = gUserId;
 
-  for (let i = 0; i<data.photos.length; i++){
+  for (let i = 0; i < data.photos.length; i++) {
     data.photos[i].imageId = data.photos[i].id;
   }
-  
+
   returnPhotos(res, data, parameters);
 });
 

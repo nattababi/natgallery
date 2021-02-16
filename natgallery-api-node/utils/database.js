@@ -8,33 +8,15 @@ async function dbSaveAlbums(data, userId) {
   
   for (let i = 0; i< data.length; i++){
     
-    let duplicate = await Album.find({_id: data[i].id});
-
-    if (duplicate.length > 0){
-      
-      //find album title of duplicated images
-      console.log("___ooo____ooo____________________oo____");
-      console.log("_oo___oo___oo____ooooo__oo_ooo___oo____");
-      console.log("oo_____oo__oo___oo____o_ooo___o_oooo___");
-      console.log("ooooooooo__oo___ooooooo_oo_______oo____");
-      console.log("oo_____oo__oo___oo______oo_______oo__o_");
-      console.log("oo_____oo_ooooo__ooooo__oo________ooo__");
-      console.log("_______________________________________");
-  
-      console.log('AlbumId from', data[i].title, 'is duplicated with albumId from', duplicate[0].title);
-      console.log("Removing", duplicate[0].title, 'from database...');
-      await Album.deleteMany({_id: data[i].id});
-    }
-
     const album = new Album({ 
       _id: data[i].id,
-     userId: userId,
-     title: (typeof(data[i].title) === 'undefined')? "noname" + i: data[i].title,
-     coverPhotoBaseUrl : data[i].coverPhotoBaseUrl,
-     mediaItemsCount: data[i].mediaItemsCount,
-     coverPhotoMediaItemId: data[i].coverPhotoMediaItemId,
-     creationTime: data[i].creationTime,
-     saveDate: Date()
+      userId: userId,
+      title: (typeof(data[i].title) === 'undefined')? "noname" + i: data[i].title,
+      coverPhotoBaseUrl : data[i].coverPhotoBaseUrl,
+      mediaItemsCount: data[i].mediaItemsCount,
+      coverPhotoMediaItemId: data[i].coverPhotoMediaItemId,
+      creationTime: data[i].creationTime,
+      saveDate: Date()
    });
 
     await album.save();
@@ -43,7 +25,7 @@ async function dbSaveAlbums(data, userId) {
   console.log('Saving', data.length, 'albums to database... Done in', parseInt((new Date()-t0)), 'msec');
 }
 
-async function dbRemoveAlbums(userId) {
+async function dbRemoveAlbums() {
   let t0 = new Date();
   
   await Album.deleteMany({});

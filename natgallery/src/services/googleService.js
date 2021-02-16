@@ -19,10 +19,20 @@ axios.interceptors.response.use(null, error => {
 
 export async function getAlbums() {
   console.log(GOOGLE_API_URL + "getAlbums/");
-  const { data } = await axios.get(GOOGLE_API_URL + "getAlbums/");
+  let data = null;
+  
+  try {
+    data  = await axios.get(GOOGLE_API_URL + "getAlbums/");
+    data = data.data;
+    console.log(data.sharedAlbums);
+    return data.sharedAlbums;
+}
+catch (e) {
+  console.log ('ERROR', e);
+    // handle the unsavoriness if needed
+  return null;
+}
 
-  console.log(data.sharedAlbums);
-  return data.sharedAlbums;
 }
 
 export async function getAlbum(id) {

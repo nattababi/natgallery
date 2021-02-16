@@ -2,10 +2,6 @@ import { observable, action } from 'mobx';
 import { getAlbums, getAlbum, getSearch } from '../services/googleService';
 
 export default class AlbumStore {
-  constructor() {
-
-  }
-
   @observable albums = null;
   @observable searchImages = null;
 
@@ -14,9 +10,13 @@ export default class AlbumStore {
       
       let albums = await getAlbums();
       
-      albums.sort((a, b) => new Date(b.creationTime) - new Date(a.creationTime));
-
-      this.albums = albums;
+      if (albums){
+        albums.sort((a, b) => new Date(b.creationTime) - new Date(a.creationTime));
+        this.albums = albums;
+      }
+      else{
+        this.albums = [];
+      }
 
     }
   }
@@ -27,7 +27,14 @@ export default class AlbumStore {
       await this.cacheAlbums();
     }
     const album = this.albums.find(x => x.id === albumId);
-    album.images = await getAlbum(albumId);
+    if (!album.images){
+      //console.log("getting album");
+      album.images = await getAlbum(albumId);
+    }
+    else{
+      //console.log("not getting album");
+      //console.log("album.images=", album.images);
+    }
   }
 
   @action async cacheSearchImages(keyword) {

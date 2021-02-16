@@ -7,7 +7,7 @@ import LoadingOverlay from 'react-loading-overlay';
 @observer
 class Albums extends Component {
   async componentDidMount() {
-    
+    await this.props.albumStore.cacheAlbums();
     //albums = albums.filter(album => album.title);
 
     // console.log('before sorting-1');
@@ -47,7 +47,7 @@ class Albums extends Component {
     }
 
     if (this.props.albumStore.albums.length < 1) {
-      return (<div>No albums found.</div>);
+      return (<div>Server error or no albums found. Please, refresh the page</div>);
     }
 
     return (
