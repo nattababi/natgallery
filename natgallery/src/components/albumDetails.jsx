@@ -12,10 +12,29 @@ import InfiniteScroll from 'react-infinite-scroller';
 class AlbumDetails extends Component {
   title = "";
   albumId = "";
+  
+  handleScrollAlbums = async () => {
+    console.log('scroll albums');
+    const parsed = queryString.parse(window.location.search);
 
-  handleScroll = async () => {
+    // TODO: check titles, maybe not needed
+    if (parsed.title) {
+      this.title = parsed.title;
+    }
 
-    //console.log('scroll');
+    if (parsed.album) {
+      //search by album
+      await this.props.albumStore.cacheAlbums();
+    }
+    else if (parsed.keyword) {
+      // TODO search
+      await this.props.albumStore.cacheSearchImages(parsed.keyword);
+    };
+  }
+
+  handleScrollImages = async () => {
+
+    console.log('scroll images');
     const parsed = queryString.parse(window.location.search);
 
     if (parsed.title) {
@@ -34,7 +53,6 @@ class AlbumDetails extends Component {
   }
 
   async componentDidMount() {
-    await this.handleScroll();
   }
 
   GetAlbumDate(d1, d2) {
@@ -74,10 +92,19 @@ class AlbumDetails extends Component {
       if (!this.props.albumStore.albums) {
         return (
           <LoadingOverlay active={true} spinner text=''>
-            <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
-              Loading albums...
-            </div>
-          </LoadingOverlay>
+            <InfiniteScroll
+              pageStart={0}
+              initialLoad={true}
+              threshold={250}
+              loadMore={this.handleScrollAlbums}
+              hasMore={true}
+              loader={<div className="loader" key={0}></div>}
+            >
+              <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
+                Loading albums...
+              </div>
+            </InfiniteScroll>
+          </LoadingOverlay>        
         );
       }
 
@@ -105,56 +132,74 @@ class AlbumDetails extends Component {
       images = album.images;
     }
 
-    const isActive = (images) ? false : true;
+    if (!images){
+      return (
+            <LoadingOverlay active={true} spinner text=''>
+                <InfiniteScroll
+                  pageStart={0}
+                  initialLoad={true}
+                  threshold={250}
+                  loadMore={this.handleScrollImages}
+                  hasMore={true}
+                  loader={<div className="loader" key={0}></div>}
+                  >
+
+                  {parsed.keyword ?
+                    <SearchForm /> :
+                    <div>
+                      <span key={'span-1'} className="m-2" style={{ fontSize: '34px' }}>{title}</span>
+                      <span key={'span-2'} style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
+                    </div>
+                  }
+                  <div style={{ marginLeft: "8px" }}>Loading {album ? album.mediaItemsCount : ""} {album.mediaItemsCount > 1 ? "images..." : "image..."}</div>
+
+                </InfiniteScroll>  
+              
+              
+              
+          </LoadingOverlay>
+      )
+    }
     
-    console.log("render::showing", album.images ? album.images.length : "empty", "of", album.mediaItemsCount, );
+   console.log("render::showing", album.images ? album.images.length : "empty", "of", album.mediaItemsCount, );
 
     return (
       <div>
-        <LoadingOverlay active={isActive} spinner text=''>
+        <InfiniteScroll
+          pageStart={0}
+          initialLoad={false}
+          threshold={250}
+          loadMore={this.handleScrollImages}
+          hasMore={album.mediaItemsCount > album.images.length}
+          loader={<div className="loader" key={0}>Loading ...</div>}
+        >
+          <div>
+            <span key={'span-1'} className="m-2" style={{ fontSize: '34px' }}>{title}</span>
+            <span key={'span-2'} style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
+          </div>
+          
+          {images.map(item => (
+            item.mimeType.startsWith('image/') ?
+            <div key={item.id + '-div'} style={{ position: 'relative', height: '200px', margin: '4px', overflow: 'hidden', display: 'inline-block' }}>
+            <Link to={parsed.album ? 
+              "/carousel?album=" + parsed.album + "&image=" + item.imageId : 
+              "/carousel?keyword=" + parsed.keyword + "&image=" + item.imageId
+            }>
+              <img className="" key={item.id + '-img'} src={item.baseUrl} style={{ height: '200px' }} />
+            </Link>
+          </div>
+              :
+           <div key={item.id + '-div'} style={{ position: 'relative', height: '400px', margin: '4px', overflow: 'hidden' }}>
+            <video key={item.id + '-vid'} src={item.baseUrl + '=dv'} type={item.mimeType} controls 
+              style={{ height: '400px', padding: '2px', width: 'auto', backgroundColor: '#666' }} />
+          </div>
+              
+          ))}
 
-          {parsed.keyword ?
-            <SearchForm /> :
-            <div>
-              <span key={'span-1'} className="m-2" style={{ fontSize: '34px' }}>{title}</span>
-              <span key={'span-2'} style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
-            </div>
-          }
-
-          {isActive ?
-            <div style={{ marginLeft: "8px" }}>Loading {album ? album.mediaItemsCount : ""} images...</div>
-            :
-
-            <InfiniteScroll
-        pageStart={0}
-        loadMore={async() => {await this.handleScroll()}}
-        hasMore={album.mediaItemsCount > album.images.length}
-        loader={<div className="loader" key={0}>Loading ...</div>}
-      >
-        {images.map(item => (
-              <div key={item.id + '-div'} style={{ position: 'relative', height: '200px', margin: '4px', overflow: 'hidden', display: 'inline-block' }}>
-                {item.mimeType.startsWith('image/') ?
-                  <Link to={parsed.album ? 
-                    "/carousel?album=" + parsed.album + "&image=" + item.imageId : 
-                    "/carousel?keyword=" + parsed.keyword + "&image=" + item.imageId
-                    }>
-                    <img className="" key={item.id + '-img'} src={item.baseUrl} style={{ height: '200px' }} />
-                  </Link> :
-                  <video key={item.id + '-vid'} src={item.baseUrl + '=dv'} type={item.mimeType} controls style={{ height: '200px', padding: '2px', width: 'auto', backgroundColor: '#666' }} />}
-              </div>
-            ))}
-
-      </InfiniteScroll>
-
-            
-          }
-        </LoadingOverlay>
-
+        </InfiniteScroll>
       </div>
     );
   }
 }
 
 export default AlbumDetails;
-
- //src={item.baseUrl + '=w256-h256'}

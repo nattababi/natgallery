@@ -11,7 +11,7 @@ class Carousel extends Component {
 
     if (parsed.album) {
       //search by album
-      await this.props.albumStore.cacheAlbumImages(parsed.album);
+      await this.props.albumStore.cacheAlbumImagesAll(parsed.album);
     }
     else if (parsed.keyword) {
       await this.props.albumStore.cacheSearchImages(parsed.keyword);
@@ -71,7 +71,7 @@ class Carousel extends Component {
       return (<div>No images found</div>);
     }
 
-    //todo: why this happens??
+    //TODO: why this happens??
     let isfound = -1;
     for(let i = 0; i<images.length;++i){
       if (images[i].imageId === parsed.image){
@@ -82,7 +82,7 @@ class Carousel extends Component {
     console.log("isfound index", isfound);
     //http://localhost:3000/carousel?album=AAcw7hacKXsgViYFHv-9bhwKxsfJZlE7Sqj_h_C32uXQdUiVM4nStwVo5h1nrcEKKAE9FS1YbK1F&image=AAcw7haQDWnevilgD1oZY94hjVv7x4WzuStooezqCSdMQzSBm3bXKQwLrmYq10P8tlQMp6sdqXfWEfyFdQFmDZsJ_BDwFdHGaA
     
-    images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
+    //images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
 
     // for (let i = 0; i< images.length;i++){
     //   if (!images[i].mimeType.startsWith('image/')) console.log(images[i].baseUrl);
@@ -113,7 +113,7 @@ class Carousel extends Component {
                 <div style={{ position: 'relative', textAlign: 'center', }}>
                   <video style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}
                     key={item.id} className="d-block w-800"
-                    src={item.baseUrl+"=dv"} type={item.mimeType} controls autoPlay loop
+                    src={item.baseUrl+"=dv"} type={item.mimeType} controls
                     alt="Alt slide" />
                 </div>
                   
@@ -142,3 +142,4 @@ class Carousel extends Component {
 
 export default Carousel;
 
+// src={item.baseUrl+"=dv"} type={item.mimeType} allowFullScreen

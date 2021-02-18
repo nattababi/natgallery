@@ -46,6 +46,31 @@ export default class AlbumStore {
     }
   }
 
+  @action async cacheAlbumImagesAll(albumId) {
+    
+    // todo: check albums for null
+    if (!this.albums) {
+      console.log("getting albums...")
+      await this.cacheAlbums();
+    }
+    
+    const album = this.albums.find(x => x.id === albumId);
+    
+    // do nothong if all pictures are loaded
+    if(album.images && !album.pageToken){
+
+    }
+    else{
+      do{
+          let data = await getAlbum(albumId, album.pageToken);
+          album.pageToken = data.nextPageToken;
+          album.images = album.images ? [...album.images, ...data.photos] : data.photos;
+        }
+      while (album.pageToken);
+    }
+    
+  }
+
   @action async cacheSearchImages(keyword) {
     this.searchImages = await getSearch(keyword);
     //console.log("Search images length=", this.searchImages.length);
