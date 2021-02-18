@@ -2,32 +2,14 @@ import React, { Component } from 'react';
 import Album from './album';
 import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
+import InfiniteScroll from 'react-infinite-scroller';
 
 @inject('albumStore')
 @observer
 class Albums extends Component {
+
   async componentDidMount() {
     await this.props.albumStore.cacheAlbums();
-    //albums = albums.filter(album => album.title);
-
-    // console.log('before sorting-1');
-    // sort by mediaMetadata.creationTime
-    //   albums.sort((a, b) => {
-    //     let fa = a.title.toLowerCase(),
-    //         fb = b.title.toLowerCase();
-
-    //     if (fa < fb) {
-    //         return -1;
-    //     }
-    //     if (fa > fb) {
-    //         return 1;
-    //     }
-    //     return 0;
-    // });
-    // console.log('after sorting');
-
-    //this.setState({ albums });
-
   }
 
   render() {
@@ -38,8 +20,8 @@ class Albums extends Component {
             active={true}
             spinner
             text=''
-            >
-            <div style={{border: '3px solid #fff', padding: '20px', textAlign: 'left'}}>
+          >
+            <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
               Loading albums...
             </div>
           </LoadingOverlay>
@@ -49,17 +31,16 @@ class Albums extends Component {
     if (this.props.albumStore.albums.length < 1) {
       return (<div>Server error or no albums found. Please, refresh the page</div>);
     }
-
+    
+   
     return (
-      // <div style={{display: 'flex', justifyContent: "space-around"}}>
       <div style={{}}>
-
         {this.props.albumStore.albums.map(item =>
           <Album key={item.id}
             albumId={item.id}
             albumTitle={item.title}
             coverUrl={item.coverPhotoBaseUrl}
-            mediaItemsCount={item.mediaItemsCount}/>
+            mediaItemsCount={item.mediaItemsCount} />
         )}
       </div>
     );
@@ -67,5 +48,3 @@ class Albums extends Component {
 }
 
 export default Albums;
-
-// <Album key={item.id} to='/album' albumTitle={item.title} albumId={item.id} cover={item.coverPhotoBaseUrl} />

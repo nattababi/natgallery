@@ -20,25 +20,41 @@ axios.interceptors.response.use(null, error => {
 export async function getAlbums() {
   console.log(GOOGLE_API_URL + "getAlbums/");
   let data = null;
-  
+
   try {
-    data  = await axios.get(GOOGLE_API_URL + "getAlbums/");
+    data = await axios.get(GOOGLE_API_URL + "getAlbums/");
     data = data.data;
     console.log(data.sharedAlbums);
     return data.sharedAlbums;
-}
-catch (e) {
-  console.log ('ERROR', e);
+  }
+  catch (e) {
+    console.log('ERROR', e);
     // handle the unsavoriness if needed
-  return null;
-}
+    return null;
+  }
 
 }
 
-export async function getAlbum(id) {
-  const { data } = await axios.post(GOOGLE_API_URL + "loadFromAlbum/" + id);
-  console.log("await return from axios", data.photos);
-  return data.photos;
+export async function getAlbum(id, pageToken) {
+
+  let data = null;
+
+  try {
+    if (pageToken) {
+      data = await axios.post(GOOGLE_API_URL + "loadFromAlbum/" + id + '/' + pageToken);
+    }
+    else {
+      data = await axios.post(GOOGLE_API_URL + "loadFromAlbum/" + id + '/0');
+    }
+    console.log("await return from axios", data.data.photos);
+    return { photos: data.data.photos, nextPageToken: data.data.parameters.pageToken };
+  }
+  catch (e) {
+    console.log('ERROR', e);
+    // handle the unsavoriness if needed
+    return null;
+  }
+
 }
 
 export async function getSearch(keyword) {

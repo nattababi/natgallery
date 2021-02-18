@@ -5,6 +5,7 @@ import moment from 'moment';
 import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
 import SearchForm from './searchForm';
+import InfiniteScroll from 'react-infinite-scroller';
 
 @inject('albumStore')
 @observer
@@ -12,9 +13,9 @@ class AlbumDetails extends Component {
   title = "";
   albumId = "";
 
-  async componentDidMount() {
+  handleScroll = async () => {
 
-    //TODO: albums list read twice when navigating directly to album
+    //console.log('scroll');
     const parsed = queryString.parse(window.location.search);
 
     if (parsed.title) {
@@ -24,13 +25,16 @@ class AlbumDetails extends Component {
     if (parsed.album) {
       //search by album
       this.albumId = parsed.album;
-      console.log("cdm-try to load images");
       await this.props.albumStore.cacheAlbumImages(this.albumId);
     }
     else if (parsed.keyword) {
+      // TODO
       await this.props.albumStore.cacheSearchImages(parsed.keyword);
     };
+  }
 
+  async componentDidMount() {
+    await this.handleScroll();
   }
 
   GetAlbumDate(d1, d2) {
@@ -79,7 +83,13 @@ class AlbumDetails extends Component {
 
       album = this.props.albumStore.albums.find(x => x.id === parsed.album);
 
-      if (!album) return (<div>Invalid album ID</div>);
+      if (!album){
+        return (<div>Invalid album ID</div>);
+      } 
+
+      if (album.images && album.images.length === 0) {
+        return (<div>Server error. Please, reload the page.</div>);
+      }
 
       title = album.title;
 
@@ -96,6 +106,8 @@ class AlbumDetails extends Component {
     }
 
     const isActive = (images) ? false : true;
+    
+    console.log("render::showing", album.images ? album.images.length : "empty", "of", album.mediaItemsCount, );
 
     return (
       <div>
@@ -110,8 +122,16 @@ class AlbumDetails extends Component {
           }
 
           {isActive ?
-            <div style={{ marginLeft: "8px" }}>Loading {album ? album.mediaItemsCount : ""} images...</div> :
-            images.map(item => (
+            <div style={{ marginLeft: "8px" }}>Loading {album ? album.mediaItemsCount : ""} images...</div>
+            :
+
+            <InfiniteScroll
+        pageStart={0}
+        loadMore={async() => {await this.handleScroll()}}
+        hasMore={album.mediaItemsCount > album.images.length}
+        loader={<div className="loader" key={0}>Loading ...</div>}
+      >
+        {images.map(item => (
               <div key={item.id + '-div'} style={{ position: 'relative', height: '200px', margin: '4px', overflow: 'hidden', display: 'inline-block' }}>
                 {item.mimeType.startsWith('image/') ?
                   <Link to={parsed.album ? 
@@ -122,9 +142,12 @@ class AlbumDetails extends Component {
                   </Link> :
                   <video key={item.id + '-vid'} src={item.baseUrl + '=dv'} type={item.mimeType} controls style={{ height: '200px', padding: '2px', width: 'auto', backgroundColor: '#666' }} />}
               </div>
-            ))
-          }
+            ))}
 
+      </InfiniteScroll>
+
+            
+          }
         </LoadingOverlay>
 
       </div>

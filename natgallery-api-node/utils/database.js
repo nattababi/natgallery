@@ -36,7 +36,7 @@ async function dbRemoveAlbums() {
 
 }
 
-async function dbSaveImages(data, albumId, debugMode = true) {
+async function dbSaveImages(data, albumId) {
   let t0 = new Date();
   let images = [];
   for (let i = 0; i < data.length; i++) {
@@ -53,20 +53,18 @@ async function dbSaveImages(data, albumId, debugMode = true) {
       },
     };
     images.push(image);
-
-
   }
 
   await Image.insertMany(images);
 
-  if (debugMode) console.log('Saving', data.length, 'images to database... Done in', parseInt((new Date() - t0)), 'msec');
+  console.log('Saving', data.length, 'images to database... Done in', parseInt((new Date() - t0)), 'msec');
 }
 
-async function dbRemoveImages(albumId, debugMode = true) {
+async function dbRemoveImages(albumId) {
   let t0 = new Date();
 
   await Image.deleteMany({ albumId: albumId });
-  if (debugMode) console.log('Removing expired images from database... Done in', parseInt((new Date() - t0)), 'msec');
+  console.log('Removing expired images from database... Done in', parseInt((new Date() - t0)), 'msec');
 }
 
 async function dbSaveCover(coverId, creationTime) {

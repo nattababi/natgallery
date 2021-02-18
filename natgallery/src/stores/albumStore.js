@@ -22,18 +22,27 @@ export default class AlbumStore {
   }
 
   @action async cacheAlbumImages(albumId) {
+    
     // todo: check albums for null
     if (!this.albums) {
+      console.log("getting albums...")
       await this.cacheAlbums();
     }
     const album = this.albums.find(x => x.id === albumId);
-    if (!album.images){
-      //console.log("getting album");
-      album.images = await getAlbum(albumId);
+    
+    if (!album.images || album.pageToken){
+      let data = await getAlbum(albumId, album.pageToken);
+      if (data){
+        album.pageToken = data.nextPageToken;
+        album.images = album.images ? [...album.images, ...data.photos] : data.photos;
+      }
+      else{
+        album.images = [];
+        album.pageToken = null;
+      }
     }
     else{
       //console.log("not getting album");
-      //console.log("album.images=", album.images);
     }
   }
 
