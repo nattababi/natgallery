@@ -34,7 +34,7 @@ class Carousel extends Component {
 
     if (parsed.album) {
       //search by album
-      await this.props.albumStore.cacheAlbumImages(parsed.album);
+      await this.props.albumStore.cacheAlbumImagesAll(parsed.album);
     }
     else if (parsed.keyword) {
       await this.props.albumStore.cacheSearchImages(parsed.keyword);
@@ -47,7 +47,8 @@ class Carousel extends Component {
     //const [thumbsSwiper, setThumbsSwiper] = useState(null);
 
     const parsed = queryString.parse(window.location.search);
-
+    const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+    
     if (!parsed.album && !parsed.keyword) return (<div>No album or keyword defined</div>);
 
     if (parsed.album && ((! this.props.albumStore.albums) || (this.props.albumStore.albums.images))){
@@ -97,15 +98,17 @@ class Carousel extends Component {
     }
 
     //TODO: process videos
-    //images = images.filter(x => x.mimeType && x.mimeType.startsWith('image/'));
 
-    //console.log(parsed.image);
-    
+    // return only images for safari
+    if (isSafari) {
+      images = images.filter(x => x.mimeType.startsWith('image/'));
+    }
+
     return (
 
       <div>
 
-        <Swiper
+        <Swiper key='swiper-1'
           
           thumbs={{ swiper: this.state.thumbsSwiper }}
           //controller={{ control: this.state.controlledSwiper }}
@@ -135,7 +138,7 @@ class Carousel extends Component {
         </Swiper>
 
 
-        <Swiper
+        <Swiper key='swiper-2'
 
           //onSwiper={this.setControlledSwiper}
 
@@ -153,14 +156,19 @@ class Carousel extends Component {
 
           >
           {images.map(item=>
-            <SwiperSlide key={item.id + "-thum"} tag="ul">
+            
+            <SwiperSlide key={item.id + "-thum"} tag="ul" style={{ marginTop: "0.5rem", marginBottom: "1rem", padding: 0, flexShrink: "unset" }}>
               <img key={item.id + "-thum-img"} 
                 src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
                 style={{ height: '150px', width: 'auto' }}
                 alt="Alt slide"
                 />
-            </SwiperSlide>)}
+            </SwiperSlide>
+            
+            )
+          }
         </Swiper>
+
       </div>
 
     );
