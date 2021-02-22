@@ -108,7 +108,7 @@ class Carousel extends Component {
 
       <div>
 
-        <Swiper key='swiper-1'
+        <Swiper key='swiper-1' style={{display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto'}}
           
           thumbs={{ swiper: this.state.thumbsSwiper }}
           //controller={{ control: this.state.controlledSwiper }}
@@ -122,23 +122,23 @@ class Carousel extends Component {
           >
         
           {images.map(item=>
-            <SwiperSlide key={item.id + "-slide"}>
+            <SwiperSlide key={item.id + "-slide"} style={{display: 'grid', width: '100%', background: 'white', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto'}}>
               {
                 item.mimeType.startsWith('image/')?
-                <img key={item.id} 
-                  src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
-                  style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block' }}
-                  alt="Alt slide"/>
+                  <img key={item.id} 
+                    src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
+                    style={{ margin: 'auto', maxWidth: '100%', maxHeight: '80vh', background:'white'}}
+                    alt="Alt slide"/>
                 :
                 <video key={item.id + '-vid'} src={item.baseUrl + '=dv'} type={item.mimeType} controls playsInline
-                style={{ height: '630px', marginLeft: 'auto', marginRight: 'auto', display: 'block'  }} />
+                style={{ margin: 'auto', maxWidth: '100%', maxHeight: '80vh', background:'white'}} />
               }
             </SwiperSlide>)}
         
         </Swiper>
 
 
-        <Swiper key='swiper-2'
+        <Swiper key='swiper-2' style={{background: 'white'}}
 
           //onSwiper={this.setControlledSwiper}
 
