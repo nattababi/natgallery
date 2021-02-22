@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Album from './album';
 import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
-import InfiniteScroll from 'react-infinite-scroller';
 
 @inject('albumStore')
 @observer

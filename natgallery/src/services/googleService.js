@@ -1,8 +1,9 @@
 import axios from "axios";
 
-//axios.defaults.baseURL = process.env.TEACHER_API_URL;
-//let TEACHER_API_URL = "https://polite-sorry-98582.herokuapp.com/api/";
-let GOOGLE_API_URL = "http://localhost:8080/";
+// axios.defaults.baseURL = process.env.TEACHER_API_URL;
+// let TEACHER_API_URL = "https://polite-sorry-98582.herokuapp.com/api/";
+// let GOOGLE_API_URL = "http://localhost:8080/";
+let GOOGLE_API_URL = "http://192.168.86.92:8080/";
 
 axios.interceptors.response.use(null, error => {
   const expectedError =
@@ -11,8 +12,8 @@ axios.interceptors.response.use(null, error => {
     error.response.status < 500;
 
   if (!expectedError) {
-    //logger.log(error);
-    //toast.error("An unexpected error occurrred.");
+    // logger.log(error);
+    // toast.error("An unexpected error occurrred.");
   }
   return Promise.reject(error);
 });
@@ -60,7 +61,7 @@ export async function getAlbum(id, pageToken) {
 export async function getSearch(keyword) {
   //const { photos } = await axios.post(GOOGLE_API_URL + "loadFromSearch/");
 
-  //let arrCategs = ['selfies','food'];
+  // let arrCategs = ['selfies','food'];
   let arrCategs = keyword.split(",");
 
   const { data } = await axios({
@@ -76,4 +77,3 @@ export async function getSearch(keyword) {
   console.log(data.photos);
   return data.photos;
 }
-

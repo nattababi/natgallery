@@ -188,8 +188,8 @@ async function getAlbumsFromDatabase() {
   // search in database
   let albums = await Album.find({});
 
-  // store albums 60 minutes in the database
-  if (albums.length > 0 && (parseInt((new Date() - albums[0].saveDate) / 1000 / 60)) < 60) {
+  // store albums 30 minutes in the database
+  if (albums.length > 0 && (parseInt((new Date() - albums[0].saveDate) / 1000 / 60)) < 30) {
 
     data.sharedAlbums = albums;
 
