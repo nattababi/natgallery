@@ -138,7 +138,7 @@ class Carousel extends Component {
         </Swiper>
 
 
-        <Swiper key='swiper-2' style={{background: 'white'}}
+        <Swiper key='swiper-2' style={{background: 'white', width: 'auto'}}
 
           //onSwiper={this.setControlledSwiper}
 
@@ -149,7 +149,7 @@ class Carousel extends Component {
           spaceBetween={20}
           centeredSlides={true}
           navigation
-          slidesPerView={4}
+          slidesPerView={'auto'}
           // // pagination={{ clickable: true }}
           scrollbar={{ draggable: true }}
           //onSlideChange={(p1) => console.log('slide lower change', p1)}
@@ -157,7 +157,7 @@ class Carousel extends Component {
           >
           {images.map(item=>
             
-            <SwiperSlide key={item.id + "-thum"} tag="ul" style={{ marginTop: "0.5rem", marginBottom: "1rem", padding: 0, flexShrink: "unset" }}>
+            <SwiperSlide key={item.id + "-thum"} tag="ul" style={{ marginTop: "0.5rem", marginBottom: "1rem", padding: 0, flexShrink: "unset", width: 'auto' }}>
               <img key={item.id + "-thum-img"} 
                 src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
                 style={{ height: '150px', width: 'auto' }}
