@@ -115,9 +115,12 @@ class AlbumDetails extends Component {
               hasMore={true}
               loader={<div className="loader" key={0}></div>}
             >
-              <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
-                Loading albums...
+              <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
+                <div style={{marginTop: '18px'}}>
+                  Loading albums...
+                </div>
               </div>
+              
             </InfiniteScroll>
           </LoadingOverlay>
         );
@@ -161,16 +164,18 @@ class AlbumDetails extends Component {
 
             {parsed.keyword ?
               <SearchForm /> :
-              <div>
-                <span key={'span-1'} className="m-2" style={{ fontSize: '34px' }}>{title}</span>
-                <span key={'span-2'} style={{ color: '#5F6368', marginLeft: '2px' }}>{strDateDisplay}</span>
-                <span key={'span-3'} style={{ whiteSpace: 'nowrap' }}>Loading {album ? album.mediaItemsCount : ""} {album.mediaItemsCount > 1 ? "images..." : "image..."}</span>
+              <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
+                  
+                <div style={{backgroundColor:'white'}}> 
+                  <div key='div-1' style={{ backgroundColor: 'white', display: 'inline-block', fontSize: '34px', marginLeft: '5px', marginBottom: '-10px' }}>{title}</div>
+                  <div key='div-2' style={{ color: '#5F6368', backgroundColor: 'white', display: 'inline-block', marginLeft: '2px', marginTop: '0' }}>{strDateDisplay}</div>
+                  <div key='div-3' style={{ color: '#5F6368', backgroundColor: 'white', display: 'inline-block', marginLeft: '8px', marginTop: '0' }}>Loading {album ? album.mediaItemsCount : ""} {album.mediaItemsCount > 1 ? "images..." : "image..."}</div>
+                </div>
+
               </div>
+              
+              
             }
-            <div style={{ marginLeft: "8px" }}>
-
-            </div>
-
           </InfiniteScroll>
 
         </LoadingOverlay>
@@ -195,8 +200,8 @@ class AlbumDetails extends Component {
           loader={<div className="loader" key={0}>Loading ...</div>}
         >
           <div>
-            <span key={'span-1'} className="m-2" style={{ fontSize: '34px' }}>{title}</span>
-            <span key={'span-2'} style={{ color: '#5F6368', marginLeft: '2px', whiteSpace: 'nowrap' }}>{strDateDisplay}</span>
+            <div key={'div-1'} className="" style={{ backgroundColor: 'white', display: 'inline-block', fontSize: '34px', marginLeft: '5px', marginBottom: '-10px' }}>{title}</div>
+            <div key={'div-2'} style={{ backgroundColor: 'white', display: 'inline-block', marginLeft: '10px', marginTop: '0' }}>{strDateDisplay}</div>
           </div>
 
           {images.map(item => (
