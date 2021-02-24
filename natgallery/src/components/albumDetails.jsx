@@ -14,7 +14,7 @@ class AlbumDetails extends Component {
   albumId = "";
 
   handleScrollAlbums = async () => {
-    console.log('scroll albums');
+    //console.log('scroll albums');
     const parsed = queryString.parse(window.location.search);
 
     // TODO: check titles, maybe not needed
@@ -28,13 +28,14 @@ class AlbumDetails extends Component {
     }
     else if (parsed.keyword) {
       // TODO search
+      console.log("Load part-1 images");
       await this.props.albumStore.cacheSearchImages(parsed.keyword);
     };
   }
 
   handleScrollImages = async () => {
 
-    console.log('scroll images');
+    //console.log('scroll images');
     const parsed = queryString.parse(window.location.search);
 
     if (parsed.title) {
@@ -48,6 +49,7 @@ class AlbumDetails extends Component {
     }
     else if (parsed.keyword) {
       // TODO
+      console.log("Load part-2 images");
       await this.props.albumStore.cacheSearchImages(parsed.keyword);
     };
   }
@@ -182,13 +184,30 @@ class AlbumDetails extends Component {
       )
     }
 
-    console.log("render::showing", album.images ? album.images.length : "empty", "of", album.mediaItemsCount,);
+
+    if (parsed.album){
+      console.log("render::showing", parsed.album && album.images ? album.images.length : "empty", "of", album.mediaItemsCount);
+    }
+    else if (parsed.keyword) {
+      console.log("render::showing", images.length);
+    }
 
     // return only images for safari
     if (isSafari) {
       images = images.filter(x => x.mimeType.startsWith('image/'));
     }
 
+    let hasMoreCalc = false;
+
+    if (parsed.album){
+      hasMoreCalc = (album.mediaItemsCount > album.images.length)? true : false;
+    }
+    else if (parsed.keyword){
+      hasMoreCalc = (this.props.albumStore.searchImagesPageToken)? true : false;
+    }
+
+    console.log('hasMoreCalc=', hasMoreCalc);
+    
     return (
       <div>
         <InfiniteScroll
@@ -196,7 +215,7 @@ class AlbumDetails extends Component {
           initialLoad={false}
           threshold={250}
           loadMore={this.handleScrollImages}
-          hasMore={album.mediaItemsCount > album.images.length}
+          hasMore={hasMoreCalc}
           loader={<div className="loader" key={0}>Loading ...</div>}
         >
           <div>

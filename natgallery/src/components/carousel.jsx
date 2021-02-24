@@ -39,6 +39,10 @@ class Carousel extends Component {
 
   }
 
+  mainSlideChange = (p1) => {
+    //console.log('slide main change', p1);
+  }
+
   render() {
 
     //const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -105,6 +109,9 @@ class Carousel extends Component {
       images = images.filter(x => x.mimeType.startsWith('image/'));
     }
 
+    console.log("rendering carousel with", images.length, 'images');
+    //console.log("active slide", images.findIndex((elem) => elem.id === parsed.image));
+
     return (
 
       <div>
@@ -112,7 +119,7 @@ class Carousel extends Component {
         <Swiper key='swiper-1' style={{ display: 'grid', width: '100%', background: 'red', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
 
           thumbs={{ swiper: this.state.thumbsSwiper }}
-          //controller={{ control: this.state.controlledSwiper }}
+          controller={{ control: this.state.controlledSwiper }}
           //onSwiper={(swiper) => console.log("::OnSwiper event", swiper)}
           effect={'fade'}
           initialSlide={images.findIndex((elem) => elem.id === parsed.image)}
@@ -120,13 +127,11 @@ class Carousel extends Component {
           slidesPerView={1}
           autoplay={false}
           navigation
-          autoplay={{
-            delay: 2500,
-            disableOnInteraction: true,
-          }}
+          onSlideChange={(p1) => this.mainSlideChange(p1)}
         >
 
           {images.map(item =>
+          
             <SwiperSlide key={item.id + "-slide"} style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}>
               {
                 item.mimeType.startsWith('image/') ?
@@ -153,15 +158,11 @@ class Carousel extends Component {
 
           spaceBetween={20}
           centeredSlides={true}
-          navigation={{
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-          }
-          }
+          navigation
+          
           slidesPerView={'auto'}
-          // // pagination={{ clickable: true }}
           scrollbar={{ draggable: true }}
-        //onSlideChange={(p1) => console.log('slide lower change', p1)}
+          //onSlideChange={(p1) => console.log('slide thumbnail change', p1)}
 
         >
           {images.map(item =>

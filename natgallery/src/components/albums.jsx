@@ -20,9 +20,11 @@ class Albums extends Component {
             spinner
             text=''
           >
-            <div style={{ border: '3px solid #fff', padding: '20px', textAlign: 'left' }}>
-              Loading albums...
-            </div>
+            <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
+                <div style={{marginTop: '18px'}}>
+                  Loading albums...
+                </div>
+              </div>
           </LoadingOverlay>
         </div>);
     }

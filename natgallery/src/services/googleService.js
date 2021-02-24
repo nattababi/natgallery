@@ -39,14 +39,16 @@ export async function getAlbums() {
 export async function getAlbum(id, pageToken) {
 
   let data = null;
-
+  let strQuery = "";
+  
+  if (pageToken) {
+    strQuery = '?pageToken=' + pageToken;
+  }
+  
   try {
-    if (pageToken) {
-      data = await axios.post(GOOGLE_API_URL + "loadFromAlbum/" + id + '/' + pageToken);
-    }
-    else {
-      data = await axios.post(GOOGLE_API_URL + "loadFromAlbum/" + id + '/0');
-    }
+    
+    data = await axios.post(GOOGLE_API_URL + "loadFromAlbum/" + id + strQuery);
+
     console.log("await return from axios", data.data.photos);
     return { photos: data.data.photos, nextPageToken: data.data.parameters.pageToken };
   }
@@ -58,22 +60,38 @@ export async function getAlbum(id, pageToken) {
 
 }
 
-export async function getSearch(keyword) {
+export async function getSearch(keyword, pageToken) {
   //const { photos } = await axios.post(GOOGLE_API_URL + "loadFromSearch/");
 
   // let arrCategs = ['selfies','food'];
   let arrCategs = keyword.split(",");
 
-  const { data } = await axios({
-    method: 'post',
-    url: GOOGLE_API_URL + "loadFromSearch/",
-    headers: {},
-    data: {
-      includedCategories: arrCategs, // This is the body part
-      excludedCategories: ''
-    }
-  });
+  // const { data } = 
+  let data = null;
 
-  console.log(data.photos);
-  return data.photos;
+  let strQuery = "";
+  
+  if (pageToken) {
+    strQuery = '?pageToken=' + pageToken;
+  }
+
+  try {
+    data = await axios({
+      method: 'post',
+      url: GOOGLE_API_URL + "loadFromSearch/" + strQuery,
+      headers: {},
+      data: {
+        includedCategories: arrCategs, // This is the body part
+        excludedCategories: ''
+      }
+    });
+
+    console.log("await return from axios", data.data.photos);
+    return { photos: data.data.photos, nextPageToken: data.data.parameters.pageToken };
+  }
+  catch (e) {
+    console.log('ERROR', e);
+    // handle the unsavoriness if needed
+    return null;
+  }
 }

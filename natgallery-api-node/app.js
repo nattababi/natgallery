@@ -177,7 +177,7 @@ app.get('/getAlbums', async (req, res) => {
 async function getAlbumsFromDatabase() {
 
   console.log(`---------------------------`);
-  
+
   // Attempt to load the albums from database if available.
   // Temporarily caching the albums makes the app more responsive.
 
@@ -216,7 +216,7 @@ async function getAlbumsFromDatabase() {
   }
 
   console.log(`---------------------------`);
-  
+
   return data;
 }
 
@@ -231,16 +231,8 @@ async function getImagesFromDatabase(albumId, pageToken) {
   // where the only parameter is the album ID.
   // Note that no other filters can be set, so this search will
   // also return videos that are otherwise filtered out in libraryApiSearch(..).
-  let parameters = null;
-  
-  // TODO: get rid of if
-  if (pageToken){
-    parameters = { albumId, pageToken };
-  }
-  else{
-    parameters = { albumId };
-  }
-  
+  const parameters = pageToken ? { albumId, pageToken } : { albumId };
+
   let data = {};
 
   let t0 = new Date();
@@ -249,7 +241,7 @@ async function getImagesFromDatabase(albumId, pageToken) {
 
   // store images 60 minutes in the database
   //const imagesRotten = parseInt((new Date() - images[0].saveDate) / 1000 / 60) > 60;
-  
+
   // TODO: chage imagesRotten criteria
   const imagesRotten = true;
   if (images && images.length > 0 && !imagesRotten) {
@@ -277,7 +269,6 @@ async function getImagesFromDatabase(albumId, pageToken) {
 
 async function libraryApiSearch(authToken, parameters) {
   let photos = [];
-  let nextPageToken = null;
   let error = null;
 
   let t0 = new Date();
@@ -291,16 +282,16 @@ async function libraryApiSearch(authToken, parameters) {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
-          }
+        }
       });
-    
+
     result = result.data;
 
     let items = [];
     if (result && result.mediaItems) {
-        items = result.mediaItems.filter(x => x);// Filter empty or invalid items.
-        
-        photos = [...photos, ...items];
+      items = result.mediaItems.filter(x => x);// Filter empty or invalid items.
+
+      photos = [...photos, ...items];
     }
 
     parameters.pageToken = result.nextPageToken;
@@ -421,24 +412,25 @@ function returnError(res, data) {
   res.status(statusCode).send(data.error);
 }
 
-app.post('/loadFromAlbum/:id/:pageToken', async (req, res) => {
-  const albumId = req.params.id;
-  const pageToken = req.params.pageToken;
+app.post('/loadFromAlbum/:id', async (req, res) => {
 
-  //TODO
+  const urlParams = req.query;
+
+  const albumId = req.params.id;
+  const pageToken = urlParams.pageToken;
+
   let data = null;
-  if (pageToken !== '0') {
-    data = await getImagesFromDatabase(albumId, pageToken);
-  }
-  else{
-    data = await getImagesFromDatabase(albumId, null);
-  }
+
+  data = await getImagesFromDatabase(albumId, pageToken);
 
   returnPhotos(res, data.data, data.parameters);
 });
 
 app.post('/loadFromSearch', async (req, res) => {
   const authToken = gToken;
+
+  const urlParams = req.query;
+  const pageToken = urlParams.pageToken;
 
   console.log('Loading images from search.');
   console.log('Received form data: ', req.body);
@@ -477,8 +469,8 @@ app.post('/loadFromSearch', async (req, res) => {
   // }
 
   // Create the parameters that will be submitted to the Library API.
-  const parameters = { filters };
-
+  const parameters = pageToken ? { filters, pageToken } : { filters };
+  
   // Submit the search request to the API and wait for the result.
   const data = await libraryApiSearch(authToken, parameters);
 
