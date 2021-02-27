@@ -8,15 +8,32 @@
   color: 'blue';
 }
 
-.swiper-slide {
-  color: 'blue';
+.swiper-slide { 
+  width: 80%;
 }
 
 .swiper-slide-active {
   color: 'blue';
 }
 
-.swiper-pagination {
-  bottom: 0;
-  padding-bottom: 100px;
+.swiper-main{ 
+  display: 'grid';
+  width: '100%';
+  background: 'red';
+  margin-top: 'auto';
+  margin-bottom: 'auto';
+  margin-right: 'auto';
+  margin-left: 'auto'
 }
+
+
+.swiper-slide {
+  display: 'grid';
+  width: '100%';
+  background: 'red';
+  margin-top: 'auto';
+  margin-bottom: 'auto';
+  margin-right: 'auto';
+  margin-left: 'auto';
+}
+

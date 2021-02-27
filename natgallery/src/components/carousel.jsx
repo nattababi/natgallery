@@ -3,26 +3,21 @@ import queryString from 'query-string';
 import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
 
-import SwiperCore, { Thumbs, Controller, Autoplay, Navigation } from 'swiper';
+import SwiperCore, { Thumbs, Autoplay, Navigation } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import 'swiper/swiper.scss';
 import 'swiper/components/navigation/navigation.scss';
 import 'swiper/components/pagination/pagination.scss';
 import 'swiper/components/scrollbar/scrollbar.scss';
-import styles from './carousel.module.css';
 
-SwiperCore.use([Thumbs]);
-//SwiperCore.use([Controller]);
-SwiperCore.use([Autoplay]);
-SwiperCore.use([Navigation]);
+SwiperCore.use([Thumbs, Autoplay, Navigation]);
 
 @inject('albumStore')
 @observer
 class Carousel extends Component {
   state = {
     thumbsSwiper: null, 
-    controlledSwiper: null,
   }
 
   setThumbsSwiper = (p1) => {
@@ -114,8 +109,9 @@ class Carousel extends Component {
 
       <div>
 
-        <Swiper key='swiper-1' style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
-  
+        <Swiper key='swiper-1'
+          style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
+          //style={{width: '100%', height: '300px', marginLeft: 'auto', marginRight: 'auto', height: '80%', width: '100%'}}
           thumbs={{ swiper: this.state.thumbsSwiper }}
           // controller={{ control: this.state.controlledSwiper }}
           // onSwiper={(swiper) => console.log("::OnSwiper event", swiper)}
@@ -129,7 +125,11 @@ class Carousel extends Component {
         
           {images.map(item =>
             
-            <SwiperSlide key={item.id + "-slide"} style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}>
+            <SwiperSlide key={item.id + "-slide"}
+              //style={{backgroundSize: 'cover', backgroundPosition: 'center'}}
+              style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
+              //style={{backgroundSize: 'cover', backgroundPosition: 'center'}}
+              >
               {
                 item.mimeType.startsWith('image/') ?
                 <img key={item.id} 
@@ -145,31 +145,29 @@ class Carousel extends Component {
         </Swiper>
 
 
-        <Swiper key='swiper-2' style={{ background: 'white', width: 'auto' }}
-
-          onSwiper={this.setControlledSwiper}
-
+        <Swiper key='swiper-2'
+          style={{height: '20%', boxSizing: 'border-box', padding: '10px 0'}}
+          //style={{ background: 'white', width: 'auto' }}
+          //onSwiper={this.setControlledSwiper}
           onSwiper={this.setThumbsSwiper}
           watchSlidesVisibility
-          watchSlidesProgress
-
-          spaceBetween={20}
+          swatchSlidesProgress
+          
+          spaceBetween={5}
           centeredSlides={true}
           navigation
 
-          slidesPerView={'auto'} 
-          scrollbar={{ draggable: true }}
+          slidesPerView={4} 
+          //scrollbar={{ draggable: true }}
           //onSlideChange={(p1) => console.log('slide lower change', p1)}
-
           >
           {images.map(item =>
             
-            <SwiperSlide key={item.id + "-thum"} tag="ul" style={{ marginTop: "0.5rem", marginBottom: "1rem", padding: 0, flexShrink: "unset", width: 'auto' }}>
-              <img key={item.id + "-thum-img"} 
-                src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
-                style={{ height: '150px', width: 'auto' }}
-                alt="Alt slide"
-                />
+            <SwiperSlide key={item.id + "-thum"}
+              style={{backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: '0% 20%', height: '100px', width: '65px', backgroundImage:'url(' + item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height + ')'}}
+              //style={{marginTop: "0.5rem", width: 'auto', flexShrink: "unset", padding: 0}}
+              //style={{  marginBottom: "1rem", padding: 0, flexShrink: "unset", width: 'auto' }}
+              >
             </SwiperSlide>
             
             )
