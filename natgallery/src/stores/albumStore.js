@@ -3,6 +3,7 @@ import { getAlbums, getAlbum, getSearch } from '../services/googleService';
 
 export default class AlbumStore {
   @observable albums = null;
+  @observable currentAlbum = null;
   @observable searchImages = null;
   @observable searchImagesPageToken = null;
 
@@ -29,7 +30,10 @@ export default class AlbumStore {
       console.log("getting albums...")
       await this.cacheAlbums();
     }
+    
     const album = this.albums.find(x => x.id === albumId);
+    ///
+    this.currentAlbum = {id: albumId, name: album.title};
 
     if (!album.images || album.pageToken) {
       let data = await getAlbum(albumId, album.pageToken);
@@ -45,6 +49,7 @@ export default class AlbumStore {
     else {
       //console.log("not getting album");
     }
+
   }
 
   @action async cacheAlbumImagesAll(albumId) {
@@ -70,6 +75,7 @@ export default class AlbumStore {
       while (album.pageToken);
     }
 
+    this.currentAlbum = {id: albumId, name: album.title};
   }
 
   @action async cacheSearchImages(keyword) {

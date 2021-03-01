@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { inject, observer } from 'mobx-react';
 
+@inject('albumStore')
+@observer
 class Navbar extends Component {
   render() {
+
     return (
       <div>
         <nav className="navbar navbar-expand-sm navbar-light bg-light">
@@ -17,6 +21,14 @@ class Navbar extends Component {
               <li className="nav-item active">
                 <Link className="nav-link" to="/albums">Albums<span className="sr-only">(current)</span></Link>
               </li>
+              
+              {this.props.albumStore.currentAlbum &&
+              <li className="nav-item active">
+                <Link className="nav-link" to={"/albumdetails?album=" + this.props.albumStore.currentAlbum.id}>{this.props.albumStore.currentAlbum.name}<span className="sr-only">(current)</span></Link>
+              </li>
+              }
+              
+
 
               <li className="nav-item active">
                 <Link className="nav-link" to="/search">Search<span className="sr-only">(current)</span></Link>

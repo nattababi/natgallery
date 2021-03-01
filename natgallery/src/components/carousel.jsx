@@ -151,7 +151,7 @@ class Carousel extends Component {
           //onSwiper={this.setControlledSwiper}
           onSwiper={this.setThumbsSwiper}
           watchSlidesVisibility
-          swatchSlidesProgress
+          watchSlidesProgress
           
           spaceBetween={5}
           centeredSlides={true}

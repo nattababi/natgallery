@@ -9,6 +9,7 @@ class Albums extends Component {
 
   async componentDidMount() {
     await this.props.albumStore.cacheAlbums();
+    this.props.albumStore.currentAlbum = null;
   }
 
   render() {
