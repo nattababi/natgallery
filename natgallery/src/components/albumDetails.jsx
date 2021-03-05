@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
-import moment from 'moment';
 import { inject, observer } from 'mobx-react';
+import { GetAlbumDate } from '../tools/main';
+//import { OverlayAlbum, OverlayImages } from './overlays';
 import LoadingOverlay from 'react-loading-overlay';
-import SearchForm from './searchForm';
 import InfiniteScroll from 'react-infinite-scroller';
+import SearchForm from './searchForm';
+
 
 @inject('albumStore')
 @observer
@@ -14,7 +16,7 @@ class AlbumDetails extends Component {
   albumId = "";
 
   handleScrollAlbums = async () => {
-    //console.log('scroll albums');
+    console.log('@@handleScrollAlbums');
     const parsed = queryString.parse(window.location.search);
 
     // TODO: check titles, maybe not needed
@@ -35,7 +37,7 @@ class AlbumDetails extends Component {
 
   handleScrollImages = async () => {
 
-    //console.log('scroll images');
+    console.log('@@handleScrollImages');
     const parsed = queryString.parse(window.location.search);
 
     if (parsed.title) {
@@ -44,12 +46,12 @@ class AlbumDetails extends Component {
 
     if (parsed.album) {
       //search by album
+      console.log("Load album images");
       this.albumId = parsed.album;
       await this.props.albumStore.cacheAlbumImages(this.albumId);
     }
     else if (parsed.keyword) {
-      // TODO
-      console.log("Load part-2 images");
+      console.log("Load search images");
       await this.props.albumStore.cacheSearchImages(parsed.keyword);
     };
   }
@@ -57,43 +59,19 @@ class AlbumDetails extends Component {
   async componentDidMount() {
   }
 
-  GetAlbumDate(d1, d2) {
-
-    // date
-    let strDate1 = moment(d1).format('ll');
-    let strDate2 = moment(d2).format('ll');
-
-    if (strDate1 === strDate2) return strDate1;
-
-    // month
-    let mon1 = moment(d1).format('MMM');
-    let mon2 = moment(d2).format('MMM');
-
-    // year
-    let year1 = moment(d1).format('YYYY');
-    let year2 = moment(d2).format('YYYY');
-
-    if (mon1 === mon2) {
-      // remove year from 2nd string
-      strDate2 = strDate2.replace(mon2 + " ", "");
-    }
-
-    if (year1 === year2) {
-      // remove year from 1st string
-      strDate1 = strDate1.replace(", " + year1, "");
-    }
-
-    return strDate1 + '-' + strDate2;
-  }
+  
 
   render() {
 
-    const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+    console.log("RENDER");
+    
     const parsed = queryString.parse(window.location.search);
-
+    
     if (!parsed.album && !parsed.keyword) {
       return (<div>No album or keyword defined</div>);
     }
+    
+    const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
 
     let images = [];
     let album = null;
@@ -104,8 +82,10 @@ class AlbumDetails extends Component {
       images = this.props.albumStore.searchImages;
       //title = "Search";
       //strDateDisplay = parsed.keyword;
-    }
+      //console.log(images.length);  
+    } 
     else {
+      // find album and images
       if (!this.props.albumStore.albums) {
         return (
           <LoadingOverlay active={true} spinner text=''>
@@ -144,7 +124,7 @@ class AlbumDetails extends Component {
       //await async 
 
       if (album.images && album.images.length !== 0) {
-        strDateDisplay = this.GetAlbumDate(
+        strDateDisplay = GetAlbumDate(
           album.images[0].mediaMetadata.creationTime,
           album.images[album.images.length - 1].mediaMetadata.creationTime);
       }
@@ -153,6 +133,7 @@ class AlbumDetails extends Component {
     }
 
     if (!images) {
+      console.log('images are empty. returning handleScrollImages::initialLoad={true}');
       return (
         <LoadingOverlay active={true} spinner text=''>
           <InfiniteScroll
@@ -163,27 +144,20 @@ class AlbumDetails extends Component {
             hasMore={true}
             loader={<div className="loader" key={0}></div>}
           >
-
             {parsed.keyword ?
               <SearchForm /> :
               <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
-                  
                 <div style={{backgroundColor:'white'}}> 
                   <div key='div-1' style={{ backgroundColor: 'white', display: 'inline-block', fontSize: '34px', marginLeft: '5px', marginBottom: '-10px' }}>{title}</div>
                   <div key='div-2' style={{ color: '#5F6368', backgroundColor: 'white', display: 'inline-block', marginLeft: '2px', marginTop: '0' }}>{strDateDisplay}</div>
                   <div key='div-3' style={{ color: '#5F6368', backgroundColor: 'white', display: 'inline-block', marginLeft: '8px', marginTop: '0' }}>Loading {album ? album.mediaItemsCount : ""} {album.mediaItemsCount > 1 ? "images..." : "image..."}</div>
                 </div>
-
               </div>
-              
-              
             }
           </InfiniteScroll>
-
         </LoadingOverlay>
-      )
+      );
     }
-
 
     if (parsed.album){
       console.log("render::showing", parsed.album && album.images ? album.images.length : "empty", "of", album.mediaItemsCount);
@@ -206,7 +180,13 @@ class AlbumDetails extends Component {
       hasMoreCalc = (this.props.albumStore.searchImagesPageToken)? true : false;
     }
 
-    console.log('hasMoreCalc=', hasMoreCalc);
+    console.log('images are not empty. returning inf scroll, hasmore=', hasMoreCalc);
+    
+    // for (let i = 0; i<images.length; i++){
+    //   if (images[i].id === "AAcw7haQEmV7MMi-qNhSw03q1U1gkN4PHtYdqJ60CmQg5dEZkM78_qcYB3xSNr-SaIUX9sYIcs7MdMASBC5E09MmRY1HXVe3gw"){
+    //     console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!item duplicated', images[i].baseUrl);
+    //   }
+    // }
     
     return (
       <div>

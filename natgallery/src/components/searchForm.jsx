@@ -33,9 +33,6 @@ class RegisterForm extends Form {
 
   render() {
 
-    var isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
-    const agent = window.navigator.userAgent;
-
     return (<div>
       <form onSubmit={this.handleSubmit}>
         <div className="input-group mb-3">
@@ -44,8 +41,8 @@ class RegisterForm extends Form {
             {this.renderButton("Search")}
 
             <div className="input-group-text">
-              <input type="checkbox" name="nature" onClick={this.filterHandler} />
-              <label className="mt-2 m-2">Nature</label>
+              <input type="checkbox" name="people" onClick={this.filterHandler} />
+              <label className="mt-2 m-2">People</label>
             </div>
 
             <div className="input-group-text">
@@ -88,20 +85,6 @@ class RegisterForm extends Form {
         </div>
         
       </form>
-
-      <button type="button" className="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Large modal</button>
-
-      <div className="modal fade bd-example-modal-lg" tabIndex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-          <div style={{ backgroundColor: 'black', color: 'white'}} id="carouselExampleControls" className="carousel slide" data-ride="carousel" data-interval="5000" data-wrap="true" keyboard="true" ride="true">
-          
-          {isSafari + ' - ' + window.navigator.userAgent}
-
-        </div>
-    </div>
-  </div>
-</div>
 
     </div>);
   }

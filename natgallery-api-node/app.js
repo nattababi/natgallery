@@ -100,33 +100,6 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Axios.interceptors.response.use(
-//   response => response,
-//   (error) => {
-//     console.log("axios error");
-
-//     const status = error.response ? error.response.status : null;
-//     const originalRequest = error.config;
-
-//     if (status === 401) {
-//       console.log("axios 401");
-//       // if (!store.state.auth.isRefreshing) {
-//       //   store.dispatch('auth/refresh')
-//       // }
-
-//       const retryOrigReq = store.dispatch('auth/subscribe', token => {
-//         originalRequest.headers['Authorization'] = 'Bearer ' + token;
-//         Axios(originalRequest);
-//       });
-
-//       return retryOrigReq;
-//     }
-//     else{
-//       return Promise.reject(error)
-//     }
-//   }
-// )
-
 axios.interceptors.response.use(null, async (error) => {
   //console.log(error);
 
@@ -282,6 +255,9 @@ async function libraryApiSearch(authToken, parameters) {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
+        },
+        params: {
+          pageSize: config.albumPageSize,
         }
       });
 
@@ -290,7 +266,6 @@ async function libraryApiSearch(authToken, parameters) {
     let items = [];
     if (result && result.mediaItems) {
       items = result.mediaItems.filter(x => x);// Filter empty or invalid items.
-
       photos = [...photos, ...items];
     }
 
