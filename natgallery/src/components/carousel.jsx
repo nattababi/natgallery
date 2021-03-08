@@ -32,7 +32,7 @@ class Carousel extends Component {
       await this.props.albumStore.cacheAlbumImagesAll(parsed.album);
     }
     else if (parsed.keyword) {
-      await this.props.albumStore.cacheSearchImages(parsed.keyword);
+      await this.props.albumStore.cacheSearchImagesAll(parsed.keyword);
     };
 
   }

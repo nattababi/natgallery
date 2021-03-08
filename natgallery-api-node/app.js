@@ -244,6 +244,8 @@ async function libraryApiSearch(authToken, parameters) {
   let photos = [];
   let error = null;
 
+  parameters.pageSize = config.searchPageSize;
+
   let t0 = new Date();
 
   try {
@@ -256,9 +258,9 @@ async function libraryApiSearch(authToken, parameters) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        params: {
-          pageSize: config.albumPageSize,
-        }
+        // params: {
+        //   pageSize: config.albumPageSize,
+        // }
       });
 
     result = result.data;

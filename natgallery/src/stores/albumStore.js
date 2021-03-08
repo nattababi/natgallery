@@ -62,7 +62,7 @@ export default class AlbumStore {
 
     const album = this.albums.find(x => x.id === albumId);
 
-    // do nothong if all pictures are loaded
+    // do nothing if all pictures are loaded
     if (album.images && !album.pageToken) {
 
     }
@@ -101,4 +101,34 @@ export default class AlbumStore {
       console.log("search. album is full");
     }
   }
+
+
+  @action async cacheSearchImagesAll(keyword) {
+
+    let images = this.searchImages;
+
+    // do nothing if all pictures are loaded
+    if (images && !this.searchImagesPageToken) {
+
+    }
+    else {
+      do {
+        let data = await getSearch(keyword, images ? this.searchImagesPageToken : null);
+        if (data) {
+          images = images ? [...images, ...data.photos] : data.photos;
+          
+          this.searchImagesPageToken = data.nextPageToken;
+          this.searchImages = images;
+        }
+        else {
+          //todo
+          console.log("debug!");
+          images = [];
+          images.pageToken = null;
+        }
+      }
+      while (this.searchImagesPageToken);
+    }
+  }
 }
+
