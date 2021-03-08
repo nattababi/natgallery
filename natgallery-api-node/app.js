@@ -24,11 +24,11 @@ let gUserId = "";
 
 // refresh albums every 60 minutes
 //var myVar = setInterval(getAlbumsAndImages, 60 * 60 * 1000);
-//var myVar = setInterval(getAlbums, 60 * 60 * 1000);
+
+//get albums each 10 minutes
+var myVar = setInterval(getAlbums, 10 * 60 * 1000);
 
 async function getAlbums() {
-
-  await dbRemoveAlbums();
 
   t0 = new Date();
 
@@ -41,6 +41,7 @@ async function getAlbums() {
     //return error
   } else {
     // Albums were successfully loaded from the API. Cache them
+    await dbRemoveAlbums();
     await dbSaveAlbums(data.sharedAlbums, gUserId);
   }
 
@@ -171,7 +172,6 @@ async function getAlbumsFromDatabase() {
 
   }
   else {
-    await dbRemoveAlbums();
 
     t0 = new Date();
 
@@ -184,6 +184,7 @@ async function getAlbumsFromDatabase() {
       //return error
     } else {
       // Albums were successfully loaded from the API. Cache them
+      await dbRemoveAlbums();
       await dbSaveAlbums(data.sharedAlbums, gUserId);
     }
   }
