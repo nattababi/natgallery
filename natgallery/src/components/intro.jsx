@@ -16,18 +16,19 @@ class Intro extends Component {
       <div>
         <Link to='/albums'>
         <div style={{display:'flex',alignItems:'center',flexFlow:'column nowrap',overflowX:'hidden'}}>
-          <div className={styles['title']} style={{marginTop: '150px'}}>
+          <div className={styles['title']} style={{marginTop: '200px'}}>
             <div className={styles['gallery']}>
-            <ul className={styles['ul']} style={{width: '120px', height: '80px'}}>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}><div style={{backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', color: 'white'}}>Enter enter</div></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
-                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '120px', height: '80px'}}></li>
+            <ul className={styles['ul']} style={{width: '180px', height: '160px'}}>
+              {}
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}><div style={{backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '10px', color: 'white'}}>Enter enter</div></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
+                <li className={styles['li']} style={{backgroundImage: 'url(Logo.png)', width: '180px', height: '160px'}}></li>
               </ul>
                 {/* <div className={styles['img-card']} style={{backgroundImage: 'url(Logo.png)'}}> */}
 

@@ -41,6 +41,11 @@ class RegisterForm extends Form {
             {this.renderButton("Search")}
 
             <div className="input-group-text">
+              <input type="checkbox" name="none" onClick={this.filterHandler} />
+              <label className="mt-2 m-2">Recent</label>
+            </div>
+
+            <div className="input-group-text">
               <input type="checkbox" name="people" onClick={this.filterHandler} />
               <label className="mt-2 m-2">People</label>
             </div>
@@ -53,11 +58,6 @@ class RegisterForm extends Form {
             <div className="input-group-text">
               <input type="checkbox" name="food" onClick={this.filterHandler} />
               <label className="mt-2 m-2">Food</label>
-            </div>
-
-            <div className="input-group-text">
-              <input type="checkbox" name="weddings" onClick={this.filterHandler} />
-              <label className="mt-2 m-2">Weddings</label>
             </div>
 
             <div className="input-group-text">

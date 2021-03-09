@@ -33,7 +33,7 @@ class Album extends Component {
             </div>
           
             <div style={{ margin: '4px 4px 4px 4px' }} style={{ position: 'absolute', bottom: '0', background: 'rgba(0, 0, 0, 0.5)', color: '#f1f1f1', width: '300px', height: '70px', padding: '20px' }}>
-              <div style={{ marginTop: '0px', width: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} >{ this.props.albumTitle}</div>
+              <div style={{ marginTop: '0px', width: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} >{this.props.albumTitle}</div>
               <div style={{ marginTop: '-3px', color: '#9C9EA1', align: 'left', fontSize: '12px' }}>{this.props.mediaItemsCount} {this.props.mediaItemsCount === 1? "item" : "items"} {moment(this.props.saveDate).format('HH:mm')}</div>
             </div>
 
