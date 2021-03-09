@@ -26,7 +26,7 @@ let gUserId = "";
 //var myVar = setInterval(getAlbumsAndImages, 60 * 60 * 1000);
 
 //get albums each 10 minutes
-var myVar = setInterval(getAlbums, 10 * 60 * 1000);
+var myVar = setTimeout(getAlbums, 10 * 60 * 1000);
 
 async function getAlbums() {
 

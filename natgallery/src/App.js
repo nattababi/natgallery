@@ -1,10 +1,10 @@
 import logo from './logo.svg';
 import './App.css';
-import Navbar from './components/navbar';
 import { Provider } from 'mobx-react';
 import * as stores from './stores';
+import { Route, useLocation } from 'react-router-dom';
 
-import { Route } from 'react-router-dom';
+import Navbar from './components/navbar';
 import Albums from './components/albums';
 import AlbumDetails from './components/albumDetails';
 import searchForm from './components/searchForm';
@@ -12,10 +12,13 @@ import Carousel from './components/carousel';
 import Intro from './components/intro';
 
 function App() {
+  
   return (
     <div>
       <Provider {...stores}>
-        <Navbar />
+
+
+      {useLocation().pathname !== '/' && <Navbar />}
 
         <div>
           <Route path="/albums" component={Albums} />
