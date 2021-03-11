@@ -1,53 +1,54 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import Album from './album';
-import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
+import { observer } from 'mobx-react-lite';
+import { useStore } from '../stores/albumStore';
 
-@inject('albumStore')
-@observer
-class Albums extends Component {
+const Albums = observer(() => {
 
-  async componentDidMount() {
-    await this.props.albumStore.cacheAlbums();
-    this.props.albumStore.currentAlbum = null;
+  const store = useStore();
+
+  // Similar to componentDidMount and componentDidUpdate:
+  useEffect(() => {
+    async function fetchData() {
+      await store.cacheAlbums();
   }
+  fetchData();
+}, [store]);
 
-  render() {
-    if (!this.props.albumStore.albums) {
-      return (
-        <div>
-          <LoadingOverlay
-            active={true}
-            spinner
-            text=''
-          >
-            <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
-                <div style={{marginTop: '18px'}}>
-                  Loading albums...
-                </div>
-              </div>
-          </LoadingOverlay>
-        </div>);
-    }
-
-    if (this.props.albumStore.albums.length < 1) {
-      return (<div>Server error or no albums found. Please, refresh the page</div>);
-    }
-    
-   
+  if (!store.albums) {
     return (
-      <div style={{}}>
-        {this.props.albumStore.albums.map(item =>
-          <Album key={item.id}
-            albumId={item.id}
-            albumTitle={item.title}
-            coverUrl={item.coverPhotoBaseUrl}
-            mediaItemsCount={item.mediaItemsCount}
-            saveDate={item.saveDate} />
-        )}
-      </div>
-    );
+      <div>
+        <LoadingOverlay
+          active={true}
+          spinner
+          text=''
+        >
+          <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
+              <div style={{marginTop: '18px'}}>
+                Loading albums...
+              </div>
+            </div>
+        </LoadingOverlay>
+      </div>);
   }
-}
+
+  if (store.albums.length < 1) {
+    return (<div>Server error or no albums found. Please, refresh the page</div>);
+  }
+     
+  return (
+    <div style={{}}>
+      {store.albums.map(item =>
+        <Album key={item.id}
+          albumId={item.id}
+          albumTitle={item.title}
+          coverUrl={item.coverPhotoBaseUrl}
+          mediaItemsCount={item.mediaItemsCount}
+          saveDate={item.saveDate} />
+      )}
+    </div>
+  );
+});
 
 export default Albums;

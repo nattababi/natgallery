@@ -14,7 +14,6 @@ class Album extends Component {
 
   
   render() {
-  const t0 = new Date();
   return (
 
       <div style={{ position: 'relative', height: '200px', width: '300px', margin: '4px 4px 4px 4px', overflow: 'hidden', display: 'inline-block' }}>

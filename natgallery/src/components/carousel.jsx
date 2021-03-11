@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import queryString from 'query-string';
-import { inject, observer } from 'mobx-react';
 import LoadingOverlay from 'react-loading-overlay';
-
+import { observer } from 'mobx-react-lite';
+import { useStore } from '../stores/albumStore';
 import SwiperCore, { Thumbs, Autoplay, Navigation } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
@@ -13,143 +13,140 @@ import 'swiper/components/scrollbar/scrollbar.scss';
 
 SwiperCore.use([Thumbs, Autoplay, Navigation]);
 
-@inject('albumStore')
-@observer
-class Carousel extends Component {
-  state = {
-    thumbsSwiper: null, 
-  }
+//@inject('albumStore')
+//@observer
+const Carousel = observer(() => {
+  
+  const store = useStore();
 
-  setThumbsSwiper = (p1) => {
-    this.setState({thumbsSwiper : p1});
-  }
+  const [thumbsSwiper, setThumbsSwiper] = useState(null);
+  
+  // Similar to componentDidMount and componentDidUpdate:
+  useEffect(() => {
+      async function fetchData() {
+        const parsed = queryString.parse(window.location.search);
 
-  async componentDidMount() {
-    const parsed = queryString.parse(window.location.search);
-
-    if (parsed.album) {
-      //search by album
-      await this.props.albumStore.cacheAlbumImagesAll(parsed.album);
+        if (parsed.album) {
+          //search by album
+          await store.cacheAlbumImagesAll(parsed.album);
+        }
+        else if (parsed.keyword) {
+          await store.cacheSearchImagesAll(parsed.keyword);
+        };
     }
-    else if (parsed.keyword) {
-      await this.props.albumStore.cacheSearchImagesAll(parsed.keyword);
-    };
+    fetchData();
+  }, [store]);
 
-  }
+  // setThumbsSwiper = (p1) => {
+  //   this.setState({thumbsSwiper : p1});
+  // }
 
-  render() {
-
-    //const [thumbsSwiper, setThumbsSwiper] = useState(null);
-
-    const parsed = queryString.parse(window.location.search);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+  const parsed = queryString.parse(window.location.search);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
     
-    if (!parsed.album && !parsed.keyword) return (<div>No album or keyword defined</div>);
+  if (!parsed.album && !parsed.keyword) return (<div>No album or keyword defined</div>);
 
-    if (parsed.album && ((!this.props.albumStore.albums) || (this.props.albumStore.albums.images))){
-      return (
-        <LoadingOverlay
-          active={true}
-          spinner
-          text=''
-        >
-          <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
-            <div style={{ marginTop: '18px' }}>
-              Loading albums...
-            </div>
-          </div>
-        </LoadingOverlay>
-      );
-    }
-    
-    let images = null;
-    if (parsed.album) {
-      const album = this.props.albumStore.albums.find(x => x.id === parsed.album);
-
-      if (!album) return (<div>Invalid album ID</div>);
-
-      images = album.images;
-    }
-    
-    if (parsed.keyword) {
-      images = this.props.albumStore.searchImages;
-    }
-    else {
-    
-    }
-
-    if (!images) {
-      return <LoadingOverlay
-          active={true}
-          spinner
-          text=''
-        >
-          <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
-          <div style={{marginTop: '18px'}}>
-            Loading images...
+  if (parsed.album && ((!store.albums) || (store.albums.images))){
+    return (
+      <LoadingOverlay
+        active={true}
+        spinner
+        text=''
+      >
+        <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
+          <div style={{ marginTop: '18px' }}>
+            Loading albums...
           </div>
         </div>
-        </LoadingOverlay>
-    }
+      </LoadingOverlay>
+    );
+  }
     
-    if (images && images.count === 0) {
-      return (<div>No images found</div>);
-    }
+  let images = null;
+  if (parsed.album) {
+    const album = store.albums.find(x => x.id === parsed.album);
 
-    //TODO: process videos
+    if (!album) return (<div>Invalid album ID</div>);
 
-    // return only images for safari
-    if (isSafari) {
-      images = images.filter(x => x.mimeType.startsWith('image/'));
-    }
-
-    console.log("rendering carousel with", images.length, 'images');
+    images = album.images;
+  }
     
-    return (
+  if (parsed.keyword) {
+    images = store.searchImages;
+  }
+  else {
+  
+  }
 
-      <div>
+  if (!images) {
+    return <LoadingOverlay
+      active={true}
+      spinner
+      text=''
+      >
+      <div style={{ border: '3px solid #fff', height: '70px', textAlign: 'left' }}>
+        <div style={{marginTop: '18px'}}>
+          Loading images...
+        </div>
+      </div>
+    </LoadingOverlay>
+  }
+    
+  if (images && images.count === 0) {
+    return (<div>No images found</div>);
+  }
 
-        <Swiper key='swiper-1'
-          style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
-          //style={{width: '100%', height: '300px', marginLeft: 'auto', marginRight: 'auto', height: '80%', width: '100%'}}
-          thumbs={{ swiper: this.state.thumbsSwiper }}
-          // controller={{ control: this.state.controlledSwiper }}
-          // onSwiper={(swiper) => console.log("::OnSwiper event", swiper)}
-          effect={'fade'}
-          initialSlide={images.findIndex((elem) => elem.id === parsed.image)}
-          spaceBetween={0}
-          slidesPerView={1}
-          autoplay={false}
-          navigation
-          >
+  //TODO: process videos
+
+  // return only images for safari
+  if (isSafari) {
+    images = images.filter(x => x.mimeType.startsWith('image/'));
+  }
+
+  console.log("rendering carousel with", images.length, 'images');
+    
+  return (
+
+    <div>
+
+      <Swiper key='swiper-1'
+        style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
+        //style={{width: '100%', height: '300px', marginLeft: 'auto', marginRight: 'auto', height: '80%', width: '100%'}}
+        thumbs={{ swiper: thumbsSwiper }}
+        // onSwiper={(swiper) => console.log("::OnSwiper event", swiper)}
+        effect={'fade'}
+        initialSlide={images.findIndex((elem) => elem.id === parsed.image)}
+        spaceBetween={0}
+        slidesPerView={1}
+        autoplay={false}
+        navigation
+        >
         
-          {images.map(item =>
-            
-            <SwiperSlide key={item.id + "-slide"}
-              //style={{backgroundSize: 'cover', backgroundPosition: 'center'}}
-              style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
-              //style={{backgroundSize: 'cover', backgroundPosition: 'center'}}
-              >
-              {
-                item.mimeType.startsWith('image/') ?
-                <img key={item.id} 
-                  src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
-                  style={{ margin: 'auto', maxWidth: '100%', maxHeight: '80vh', background: 'white' }}
-                    alt="Alt slide" />
-                :
-                <video key={item.id + '-vid'} src={item.baseUrl + '=dv'} type={item.mimeType} controls playsInline
-                  style={{ margin: 'auto', maxWidth: '100%', maxHeight: '80vh', background: 'white' }} />
-              }
-            </SwiperSlide>)}
-        
+        {images.map(item =>
+          
+          <SwiperSlide key={item.id + "-slide"}
+            //style={{backgroundSize: 'cover', backgroundPosition: 'center'}}
+            style={{ display: 'grid', width: '100%', background: 'black', marginTop: 'auto', marginBottom: 'auto', marginRight: 'auto', marginLeft: 'auto' }}
+            //style={{backgroundSize: 'cover', backgroundPosition: 'center'}}
+            >
+            {
+              item.mimeType.startsWith('image/') ?
+              <img key={item.id} 
+                src={item.baseUrl + '=w' + item.mediaMetadata.width + '-h' + item.mediaMetadata.height}
+                style={{ margin: 'auto', maxWidth: '100%', maxHeight: '80vh', background: 'white' }}
+                  alt="Alt slide" />
+              :
+              <video key={item.id + '-vid'} src={item.baseUrl + '=dv'} type={item.mimeType} controls playsInline
+                style={{ margin: 'auto', maxWidth: '100%', maxHeight: '80vh', background: 'white' }} />
+            }
+          </SwiperSlide>)}      
         </Swiper>
 
 
         <Swiper key='swiper-2'
           style={{height: '20%', boxSizing: 'border-box', padding: '10px 0'}}
           //style={{ background: 'white', width: 'auto' }}
-          //onSwiper={this.setControlledSwiper}
-          onSwiper={this.setThumbsSwiper}
+          onSwiper={setThumbsSwiper}
           watchSlidesVisibility
           watchSlidesProgress
           
@@ -177,8 +174,7 @@ class Carousel extends Component {
       </div>
 
     );
-  }
-}
+});
 
 export default Carousel;
 

@@ -1,13 +1,23 @@
-import { observable, action } from 'mobx';
+//import { observable, action } from 'mobx';
 import { getAlbums, getAlbum, getSearch } from '../services/googleService';
+import { makeAutoObservable } from 'mobx';
+import { createContext } from 'react';
+import { useContext } from 'react';
 
-export default class AlbumStore {
-  @observable albums = null;
-  @observable currentAlbum = null;
-  @observable searchImages = null;
-  @observable searchImagesPageToken = null;
+class AlbumStore {
+  albums = null;
+  currentAlbum = null;
+  searchImages = null;
+  searchImagesPageToken = null;
 
-  @action async cacheAlbums() {
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  async cacheAlbums() {
+
+    this.currentAlbum = null;
+
     if (!this.albums) {
 
       let albums = await getAlbums();
@@ -23,17 +33,17 @@ export default class AlbumStore {
     }
   }
 
-  @action async cacheAlbumImages(albumId) {
+  async cacheAlbumImages(albumId) {
 
     // todo: check albums for null
     if (!this.albums) {
       console.log("getting albums...")
       await this.cacheAlbums();
     }
-    
+
     const album = this.albums.find(x => x.id === albumId);
-    ///
-    this.currentAlbum = {id: albumId, name: album.title};
+
+    this.currentAlbum = { id: albumId, name: album.title };
 
     if (!album.images || album.pageToken) {
       let data = await getAlbum(albumId, album.pageToken);
@@ -49,10 +59,9 @@ export default class AlbumStore {
     else {
       //console.log("not getting album");
     }
-
   }
 
-  @action async cacheAlbumImagesAll(albumId) {
+  async cacheAlbumImagesAll(albumId) {
 
     // todo: check albums for null
     if (!this.albums) {
@@ -75,10 +84,10 @@ export default class AlbumStore {
       while (album.pageToken);
     }
 
-    this.currentAlbum = {id: albumId, name: album.title};
+    this.currentAlbum = { id: albumId, name: album.title };
   }
 
-  @action async cacheSearchImages(keyword) {
+  async cacheSearchImages(keyword) {
 
     let images = this.searchImages;
 
@@ -86,7 +95,7 @@ export default class AlbumStore {
       let data = await getSearch(keyword, images ? this.searchImagesPageToken : null);
       if (data) {
         images = images ? [...images, ...data.photos] : data.photos;
-        
+
         this.searchImagesPageToken = data.nextPageToken;
         this.searchImages = images;
       }
@@ -103,7 +112,7 @@ export default class AlbumStore {
   }
 
 
-  @action async cacheSearchImagesAll(keyword) {
+  async cacheSearchImagesAll(keyword) {
 
     let images = this.searchImages;
 
@@ -116,7 +125,7 @@ export default class AlbumStore {
         let data = await getSearch(keyword, images ? this.searchImagesPageToken : null);
         if (data) {
           images = images ? [...images, ...data.photos] : data.photos;
-          
+
           this.searchImagesPageToken = data.nextPageToken;
           this.searchImages = images;
         }
@@ -132,3 +141,14 @@ export default class AlbumStore {
   }
 }
 
+const StoreContext = createContext();
+
+function StoreProvider ({store, children}) {
+  return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
+}
+
+const useStore = () => {
+  return useContext(StoreContext);
+}
+
+export { AlbumStore, StoreProvider, useStore }

@@ -1,7 +1,4 @@
-import logo from './logo.svg';
 import './App.css';
-import { Provider } from 'mobx-react';
-import * as stores from './stores';
 import { Route, useLocation } from 'react-router-dom';
 
 import Navbar from './components/navbar';
@@ -10,15 +7,17 @@ import AlbumDetails from './components/albumDetails';
 import searchForm from './components/searchForm';
 import Carousel from './components/carousel';
 import Intro from './components/intro';
+import { AlbumStore, StoreProvider } from './stores/albumStore';
+
+const store = new AlbumStore();
 
 function App() {
   
   return (
     <div>
-      <Provider {...stores}>
+      <StoreProvider store={store}>
 
-
-      {useLocation().pathname !== '/' && <Navbar />}
+        {useLocation().pathname !== '/' && <Navbar />}
 
         <div>
           <Route path="/albums" component={Albums} />
@@ -28,7 +27,7 @@ function App() {
           <Route path="/" exact component={Intro} />
         </div>
 
-      </Provider>
+      </StoreProvider>
     </div>
   );
 }
