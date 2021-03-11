@@ -12,7 +12,7 @@ config.photosToLoad = 500;
 config.searchPageSize = 50;
 
 // The page size to use for the listing albums request. 50 is recommended.
-config.albumPageSize = 75;
+config.albumPageSize = 50;
 
 // The API end point to use. Do not change.
 config.apiEndpoint = 'https://photoslibrary.googleapis.com';
